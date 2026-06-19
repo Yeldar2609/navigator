@@ -1,0 +1,79 @@
+rules_version = '2';
+
+// Kim Bolam — Firestore security rules.
+//
+// Design: students reach ONLY their own data tree under /users/{uid}. Admin and
+// analytics operations run server-side through the Firebase Admin SDK (which
+// bypasses these rules) behind authenticated, role-checked API routes — so this
+// ruleset deliberately grants NO client admin access. In particular there is no
+// rule path that lets any client read another user's chats, results, or reports.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    // --- Per-user private tree -------------------------------------------------
+    // The owner may read their whole tree. Writes are allowed for owner-authored
+    // data; scored results and report metadata are written server-side only.
+    match /users/{uid} {
+      allow read: if isOwner(uid);
+      allow create, update: if isOwner(uid);
+      allow delete: if false; // account deletion is a server/admin operation
+
+      match /assessmentSessions/{sessionId} {
+        allow read, write: if isOwner(uid);
+      }
+      match /assessmentAnswers/{answerId} {
+        allow read, write: if isOwner(uid);
+      }
+      match /assessmentResults/{resultId} {
+        allow read: if isOwner(uid);
+        allow write: if false; // computed and written by the server only
+      }
+      match /plans/{planId} {
+        allow read, write: if isOwner(uid);
+        match /items/{itemId} {
+          allow read, write: if isOwner(uid);
+        }
+      }
+      match /checkIns/{checkInId} {
+        allow read, write: if isOwner(uid);
+      }
+      match /progressCalendar/{dayId} {
+        allow read, write: if isOwner(uid);
+      }
+      // Chats are private to the owner. No admin/staff path exists by design.
+      match /chatThreads/{threadId} {
+        allow read, write: if isOwner(uid);
+        match /messages/{messageId} {
+          allow read, write: if isOwner(uid);
+        }
+      }
+      // Report metadata is owner-readable; files live in Storage. Server writes only.
+      match /reports/{reportId} {
+        allow read: if isOwner(uid);
+        allow write: if false;
+      }
+    }
+
+    // --- Public curated catalogs (read-only to clients; server writes only) ----
+    match /careerCatalog/{docId}       { allow read: if true; allow write: if false; }
+    match /majorCatalog/{docId}        { allow read: if true; allow write: if false; }
+    match /universityCatalog/{docId}   { allow read: if true; allow write: if false; }
+    match /courseCatalog/{docId}       { allow read: if true; allow write: if false; }
+    match /assessmentTemplates/{docId} { allow read: if true; allow write: if false; }
+    match /assessmentItemBank/{docId}  { allow read: if true; allow write: if false; }
+
+    // --- Server-only collections (no client access of any kind) ----------------
+    // organizations, organizationMembers, analyticsEvents, auditLogs, adminActions
+    // are reached exclusively via the Admin SDK from authorized server routes.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

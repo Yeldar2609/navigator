@@ -11,6 +11,9 @@ import { aiConfigured, callLLM } from '@/lib/ai/client'
 import { moderate } from '@/lib/ai/moderation'
 import { buildSnapshot } from '@/lib/ai/snapshot'
 import { buildSystemPrompt } from '@/lib/ai/system-prompt'
+import { checkScope } from '@/lib/ai/counselor-guardrails'
+import { detectIntentText, isDialogflowConfigured } from '@/lib/ai/dialogflow-client'
+import { buildCounselorContext, toDialogflowParameters } from '@/lib/ai/context-builder'
 import {
   baseSuggestions,
   generateCounselorReply,
@@ -89,6 +92,21 @@ export async function POST(request: Request) {
 
   // Demo install (no Supabase): the client runs chat locally; this is a safe echo.
   if (!isSupabaseConfigured()) {
+    // Scope guardrail (out-of-scope → polite redirect). Crisis/harm is handled by
+    // generateCounselorReply below; only gate scope on otherwise-OK messages.
+    if (safety.category === 'ok') {
+      const scope = checkScope(message, locale)
+      if (!scope.allowed && scope.redirect) {
+        return ok({
+          thread_id: 'local',
+          assistant_message: scope.redirect,
+          suggested_questions: [],
+          suggested_actions: [],
+          referenced_profile_factors: [],
+          ai_meta: { provider: 'guardrail', fallback: true, reason: scope.reason },
+        })
+      }
+    }
     const snapshot = buildSnapshot({ locale, gradeLevel: null, score: null })
     const reply = generateCounselorReply({ message, snapshot, factors: EMPTY_FACTORS, d4 })
     return ok({
@@ -98,6 +116,7 @@ export async function POST(request: Request) {
       suggested_actions: reply.suggestedActions,
       referenced_profile_factors: reply.referencedFactors,
       safety_notice_optional: reply.safetyNotice,
+      ai_meta: { provider: 'template', fallback: true },
     })
   }
 
@@ -168,6 +187,20 @@ export async function POST(request: Request) {
         suggested_questions: [],
         suggested_actions: [],
         referenced_profile_factors: [],
+      })
+    }
+
+    // Out-of-scope (coding/homework/medical/therapy/sensitive-data) → redirect.
+    const scope = checkScope(message, locale)
+    if (!scope.allowed && scope.redirect) {
+      await storeAssistant(scope.redirect)
+      return ok({
+        thread_id: tid,
+        assistant_message: scope.redirect,
+        suggested_questions: [],
+        suggested_actions: [],
+        referenced_profile_factors: [],
+        ai_meta: { provider: 'guardrail', fallback: true, reason: scope.reason },
       })
     }
 
@@ -252,10 +285,54 @@ export async function POST(request: Request) {
       ? buildFactors(locale, dict, score, careers, skillGaps, planSummary?.nextActionTitle ?? '')
       : EMPTY_FACTORS
 
-    // Real LLM when a key is configured; otherwise the safe mock.
+    // Prefer the Dialogflow CX agent when configured; else a text LLM; else the
+    // deterministic template fallback below. We never fake AI as real.
     let assistantText: string | null = null
-    if (aiConfigured()) {
+    let aiProvider: 'dialogflow_cx' | 'llm' | 'template' = 'template'
+    let aiFallback = true
+    if (isDialogflowConfigured()) {
+      const ctx = buildCounselorContext(snapshot)
+      const df = await detectIntentText({
+        sessionId: profile.id as string,
+        text: message,
+        languageCode: locale,
+        parameters: toDialogflowParameters(ctx),
+      })
+      if (df && !df.fallback && df.text) {
+        assistantText = df.text
+        aiProvider = 'dialogflow_cx'
+        aiFallback = false
+      }
+    }
+    if (!assistantText && aiConfigured()) {
       assistantText = await callLLM(buildSystemPrompt(snapshot), [{ role: 'user', content: message }])
+      if (assistantText) {
+        aiProvider = 'llm'
+        aiFallback = false
+      }
+    }
+
+    // Output-side guardrail (defense in depth): a model can be jailbroken into
+    // unsafe/off-scope content despite the prompt policy. Re-run the deterministic
+    // safety + scope classifiers on the REPLY; on a trip, drop the model output and
+    // fall through to the safe deterministic template (crisis short-circuits).
+    if (assistantText) {
+      const outSafety = await moderate(assistantText)
+      if (outSafety.category === 'crisis') {
+        await storeAssistant(d4.safety.crisis)
+        return ok({
+          thread_id: tid,
+          assistant_message: d4.safety.crisis,
+          suggested_questions: [],
+          suggested_actions: [],
+          referenced_profile_factors: [],
+          safety_notice_optional: d4.safety.notice,
+          ai_meta: { provider: aiProvider, fallback: true, language: locale },
+        })
+      }
+      if (outSafety.category === 'harmful' || !checkScope(assistantText, locale).allowed) {
+        assistantText = null // fall through to the safe deterministic template below
+      }
     }
 
     if (assistantText) {
@@ -275,6 +352,7 @@ export async function POST(request: Request) {
         suggested_questions: sugg.questions,
         suggested_actions: sugg.actions,
         referenced_profile_factors: referenced,
+        ai_meta: { provider: aiProvider, fallback: aiFallback, language: locale },
       })
     }
 
@@ -287,6 +365,7 @@ export async function POST(request: Request) {
       suggested_actions: reply.suggestedActions,
       referenced_profile_factors: reply.referencedFactors,
       safety_notice_optional: reply.safetyNotice,
+      ai_meta: { provider: 'template', fallback: true, language: locale },
     })
   } catch {
     return fail('chat_failed', 500)

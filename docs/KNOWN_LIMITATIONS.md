@@ -36,3 +36,23 @@ are the agenda before a real school/government pilot.
   the demo/e2e build needs `NEXT_PUBLIC_DEMO_MODE=on`.
 - No parental-consent workflow (MVP scope).
 - No automated a11y/contrast audit in CI; not yet screen-reader tested end-to-end.
+
+## Day 6 — production build, Firebase/Google migration, AI counselor (honest list)
+- **Assessment** is based on the thesis structure but **rewritten and productized**; the adaptive
+  branching is deterministic/productized and **not yet externally psychometrically validated**.
+- **Retake interval (2 months) is guidance, not enforced** — `retakeAssessment()` currently allows
+  immediate retakes; the interval gate is a documented extension point.
+- **Salary/demand data** must show source/provenance and may be **curated estimates** until verified
+  against official KZ sources (Enbek, stat.gov.kz). See `DATA_SOURCES.md`.
+- **AI counselor** is guidance — **not** an official admissions authority, therapist, or human
+  counselor. It ships **disabled-but-wired** (deterministic template fallback, `ai_meta.fallback`)
+  until a Dialogflow CX agent is created; **Kazakh AI support will need additional QA**.
+- **Firebase backend is added behind the data abstraction** and is typecheck/build-clean, but the
+  end-to-end Firebase path (Auth + Firestore + Storage + real route cutover) is **untested without
+  real credentials** (a human-only blocker). The app runs in demo mode in this build. Supabase remains
+  as documented legacy/fallback.
+- **AI plan-suggestion Apply/Cancel UI** and **server-side PDF→Cloud Storage** are wired in
+  design/docs but the UI/route cutover is a documented follow-up.
+- **Deploy is prepared, not executed** here — see the human-only checklist in `DEPLOYMENT.md` /
+  `DAY_6_NOTES.md` (Firebase web app, admin key, `firebase login`/`gcloud` PATH, Dialogflow agent,
+  first-admin claim).

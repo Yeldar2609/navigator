@@ -1,7 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // Keep server logs readable in dev; no experimental flags on Day 1.
+  // `standalone` produces a self-contained server for the Docker/Cloud Run path.
+  // Firebase App Hosting ignores this and builds its own server — harmless there.
+  output: 'standalone',
 }
 
 export default nextConfig
