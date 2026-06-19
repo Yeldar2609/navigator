@@ -28,8 +28,12 @@ test('demo journey: onboarding → assessment → results → plan', async ({ pa
 
   // Results
   await page.goto('/en/results')
-  await expect(page.getByText('Career Readiness Score')).toBeVisible()
+  await expect(page.getByText('Career Readiness Score', { exact: true })).toBeVisible()
   await expect(page.getByText('match', { exact: false }).first()).toBeVisible()
+
+  // Methodology transparency: "How we calculated this" disclosure opens with detail
+  await page.getByText('How we calculated this').click()
+  await expect(page.getByText('The six areas')).toBeVisible()
 
   // Build the one-month plan
   await page.getByRole('button', { name: /build my plan/i }).click()

@@ -4,7 +4,7 @@ import * as React from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion, useReducedMotion } from 'framer-motion'
-import { ArrowRight, Bot, Sparkles, Target } from 'lucide-react'
+import { ArrowRight, Bot, Info, Sparkles, Target } from 'lucide-react'
 import type { Locale } from '@/lib/i18n/config'
 import type { Messages } from '@/lib/i18n/dictionaries'
 import { IPO_CRITERIA_KEYS } from '@/lib/methodology/awareness-index'
@@ -175,6 +175,7 @@ export function ResultsView({ locale, dict }: { locale: Locale; dict: Messages }
               </p>
             </div>
           </div>
+          <p className="mt-3 text-xs italic text-muted-foreground">{td.howCalculated.careerNote}</p>
         </details>
       </li>
     )
@@ -233,6 +234,47 @@ export function ResultsView({ locale, dict }: { locale: Locale; dict: Messages }
             </span>
           ))}
         </div>
+
+        {/* Methodology transparency — explains the score on demand (builds trust) */}
+        <details className="group mt-5 border-t border-primary-soft/60 pt-4">
+          <summary className="inline-flex cursor-pointer list-none items-center gap-1.5 text-xs font-medium text-primary [&::-webkit-details-marker]:hidden">
+            <Info className="h-3.5 w-3.5" />
+            {td.howCalculated.trigger}
+          </summary>
+          <div className="mt-3 space-y-4 text-sm text-muted-foreground">
+            <p>{td.howCalculated.scoreIntro}</p>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-foreground/70">
+                {td.howCalculated.criteriaHeading}
+              </p>
+              <ul className="mt-2 space-y-1.5">
+                {IPO_CRITERIA_KEYS.map((key) => (
+                  <li key={key} className="flex items-baseline justify-between gap-3">
+                    <span>
+                      <span className="font-medium text-foreground">{td.criteria[key]}</span>
+                      {' — '}
+                      {td.howCalculated.criteriaDesc[key]}
+                    </span>
+                    <span className="shrink-0 tabular-nums text-foreground">
+                      {score.ipoCriteria[key]}/10
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-foreground/70">
+                {td.howCalculated.careersHeading}
+              </p>
+              <ul className="mt-2 list-disc space-y-1 pl-4">
+                {(['direction', 'styles', 'interests', 'relevance'] as const).map((k) => (
+                  <li key={k}>{td.howCalculated.careersFactors[k]}</li>
+                ))}
+              </ul>
+            </div>
+            <p className="text-xs italic">{td.howCalculated.trustNote}</p>
+          </div>
+        </details>
       </Band>
 
       {/* Direction band */}

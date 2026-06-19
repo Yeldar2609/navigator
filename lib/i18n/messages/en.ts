@@ -393,6 +393,31 @@ const en = {
     confidenceLevel: { low: 'Worth exploring', medium: 'Good fit', high: 'Strong fit' },
     learnNext: 'Learn next',
     firstAction: 'This week',
+    howCalculated: {
+      trigger: 'How we calculated this',
+      scoreIntro:
+        'Your Career Readiness Score blends six areas, each rated 0–10. Together they make a 0–60 score, shown here as a percentage.',
+      criteriaHeading: 'The six areas',
+      criteriaDesc: {
+        self_understanding: 'How clearly your interests point toward one direction.',
+        skills_awareness: 'How well you know your own strengths.',
+        career_information: 'How much you know about real professions.',
+        independence: 'How ready you feel to decide on your own.',
+        confidence: 'How sure you feel about choosing.',
+        planning: 'Whether you have a concrete next step planned.',
+      },
+      careersHeading: 'How careers are ranked',
+      careersFactors: {
+        direction: 'Your direction — the route that fits you most',
+        styles: 'Your two strongest styles (clusters)',
+        interests: 'Your favourite subjects and goals',
+        relevance: 'Curated demo relevance — sample data, not live labour-market data',
+      },
+      trustNote:
+        'This is a transparent method we built to turn your answers into guidance — not a clinical test or a final verdict. Your score naturally rises as you learn, plan, and explore.',
+      careerNote:
+        'This match blends your direction, style, and interests with curated demo relevance (sample data, not live labour-market data).',
+    },
     explorer: {
       title: 'Career Explorer',
       subtitle: 'Browse every direction. No pressure — just look around.',
