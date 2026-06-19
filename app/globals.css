@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue',
+      Arial, 'Noto Sans', 'Noto Sans Kazakh', sans-serif;
+
+    /* Calm, warm, premium light theme. HSL channels (used as hsl(var(--x))). */
+    --background: 210 40% 99%;
+    --foreground: 224 32% 14%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 224 32% 14%;
+
+    --primary: 245 58% 58%;
+    --primary-foreground: 0 0% 100%;
+    --primary-soft: 245 84% 96%;
+
+    --secondary: 246 30% 96%;
+    --secondary-foreground: 245 30% 28%;
+
+    --muted: 220 24% 96%;
+    --muted-foreground: 220 12% 46%;
+
+    --accent: 18 92% 63%;
+    --accent-foreground: 0 0% 100%;
+
+    --success: 152 52% 42%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 30 40% 12%;
+
+    --destructive: 0 72% 56%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 222 22% 91%;
+    --input: 222 22% 89%;
+    --ring: 245 58% 58%;
+
+    --radius: 1rem;
+  }
+
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background-color: hsl(var(--primary) / 0.18);
+  }
+}
+
+@layer components {
+  /* Soft layered gradient used behind the hero. */
+  .bg-hero {
+    background:
+      radial-gradient(1200px 620px at 8% -12%, hsl(var(--primary-soft)), transparent 60%),
+      radial-gradient(960px 520px at 100% -6%, hsl(var(--accent) / 0.14), transparent 55%),
+      linear-gradient(180deg, hsl(var(--background)), hsl(var(--background)));
+  }
+
+  .text-gradient {
+    background: linear-gradient(120deg, hsl(var(--primary)), hsl(var(--accent)));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .card-surface {
+    background-color: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    box-shadow:
+      0 1px 2px rgba(16, 24, 40, 0.04),
+      0 8px 24px -12px rgba(16, 24, 40, 0.12);
+  }
+}
+
+/* Respect users who prefer less motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

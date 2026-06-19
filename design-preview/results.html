@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Navigator — Your profile</title>
+    <!--
+      Self-contained preview of Navigator's Results screen (the emotional centerpiece).
+      Real content, the app's design tokens, SVG readiness ring, staggered reveal.
+      No build, no server, no network. Double-click to open anywhere.
+    -->
+    <style>
+      :root {
+        --bg: hsl(210 40% 99%);
+        --fg: hsl(224 32% 14%);
+        --card: hsl(0 0% 100%);
+        --muted: hsl(220 24% 96%);
+        --muted-fg: hsl(220 12% 46%);
+        --primary: hsl(245 58% 58%);
+        --primary-fg: hsl(0 0% 100%);
+        --primary-soft: hsl(245 84% 96%);
+        --accent: hsl(18 92% 63%);
+        --success: hsl(152 52% 42%);
+        --border: hsl(222 22% 91%);
+        --radius: 18px;
+        --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+          Arial, "Noto Sans", sans-serif;
+        --shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 10px 28px -14px rgba(16, 24, 40, 0.16);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: hsl(228 24% 8%);
+          --fg: hsl(210 30% 96%);
+          --card: hsl(228 20% 12%);
+          --muted: hsl(228 16% 18%);
+          --muted-fg: hsl(220 12% 65%);
+          --primary-soft: hsl(245 40% 20%);
+          --border: hsl(228 16% 22%);
+          --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px -14px rgba(0, 0, 0, 0.5);
+        }
+      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: var(--sans);
+        -webkit-font-smoothing: antialiased;
+        line-height: 1.45;
+      }
+      .container { width: 100%; max-width: 880px; margin: 0 auto; padding: 0 20px; }
+
+      /* Top bar */
+      header.top {
+        position: sticky; top: 0; z-index: 10;
+        backdrop-filter: blur(8px);
+        background: color-mix(in srgb, var(--bg) 82%, transparent);
+        border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+      }
+      .top .row { display: flex; align-items: center; justify-content: space-between; height: 60px; gap: 16px; }
+      .brand { display: inline-flex; align-items: center; gap: 9px; font-weight: 700; }
+      .brand .mark {
+        width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center;
+        background: var(--primary); color: var(--primary-fg);
+      }
+      nav.tabs { display: flex; gap: 4px; }
+      nav.tabs a {
+        font-size: 14px; font-weight: 500; text-decoration: none; color: var(--muted-fg);
+        padding: 6px 12px; border-radius: 999px;
+      }
+      nav.tabs a.active { background: var(--primary-soft); color: var(--primary); }
+      .langs { display: inline-flex; gap: 2px; padding: 3px; border: 1px solid var(--border); border-radius: 999px; background: var(--card); }
+      .langs span { font-size: 12px; font-weight: 700; padding: 4px 9px; border-radius: 999px; color: var(--muted-fg); }
+      .langs span.on { background: var(--primary); color: var(--primary-fg); }
+      .hide-sm { display: none; }
+      @media (min-width: 720px) { .hide-sm { display: flex; } }
+
+      main { padding: 28px 0 64px; }
+
+      /* Reveal animation */
+      .reveal { opacity: 0; transform: translateY(14px); animation: fadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+      @keyframes fadeUp { to { opacity: 1; transform: none; } }
+
+      .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+      .pad { padding: 24px; }
+
+      .badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 5px 11px; border-radius: 999px; }
+      .badge.accent { background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); }
+      .badge.primary { background: var(--primary-soft); color: var(--primary); }
+      .badge.success { background: color-mix(in srgb, var(--success) 14%, transparent); color: var(--success); }
+      .badge.outline { border: 1px solid var(--border); color: var(--muted-fg); }
+
+      /* Hero */
+      .hero { display: grid; grid-template-columns: 1fr; gap: 22px; align-items: center; padding: 28px;
+        background: radial-gradient(700px 300px at 0% 0%, var(--primary-soft), transparent 70%), var(--card); }
+      @media (min-width: 680px) { .hero { grid-template-columns: 1fr auto; } }
+      .hero h1 { margin: 14px 0 6px; font-size: 28px; line-height: 1.15; letter-spacing: -0.01em; }
+      @media (min-width: 680px) { .hero h1 { font-size: 32px; } }
+      .hero p.sub { margin: 0; color: var(--muted-fg); font-size: 16px; }
+      .hero p.fine { margin: 6px 0 0; color: var(--muted-fg); font-size: 13px; }
+      .route { margin-top: 14px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border);
+        background: var(--card); border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 600; }
+      .route .dot { width: 9px; height: 9px; border-radius: 999px; background: var(--primary); }
+
+      /* Ring */
+      .ring-wrap { display: flex; flex-direction: column; align-items: center; }
+      .ring { position: relative; width: 168px; height: 168px; }
+      .ring svg { transform: rotate(-90deg); }
+      .ring .track { fill: none; stroke: var(--muted); stroke-width: 12; }
+      .ring .meter { fill: none; stroke: url(#grad); stroke-width: 12; stroke-linecap: round;
+        stroke-dasharray: 477.5; stroke-dashoffset: 477.5; animation: ring 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.2s forwards; }
+      @keyframes ring { to { stroke-dashoffset: 133.7; } } /* 72% of 477.5 */
+      .ring .center { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; }
+      .ring .num { font-size: 40px; font-weight: 800; font-variant-numeric: tabular-nums; }
+      .ring .lab { font-size: 11px; color: var(--muted-fg); max-width: 7rem; margin-top: 2px; }
+
+      .grid2 { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 18px; }
+      @media (min-width: 680px) { .grid2 { grid-template-columns: 1fr 1fr; } }
+      h2.title { font-size: 18px; margin: 0 0 4px; }
+      .icon { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; margin-bottom: 12px; }
+      .icon.p { background: var(--primary-soft); color: var(--primary); }
+      .icon.a { background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); }
+      .muted { color: var(--muted-fg); }
+      .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+      .lean li { margin-bottom: 12px; }
+      .lean b { display: block; }
+
+      /* Careers */
+      .career { border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-top: 14px; }
+      .career .head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+      .career .name { font-weight: 700; }
+      .reason { display: inline-block; background: var(--muted); color: var(--muted-fg); font-size: 12px; padding: 4px 10px; border-radius: 999px; margin: 8px 6px 0 0; }
+      .career .cols { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 12px; }
+      @media (min-width: 560px) { .career .cols { grid-template-columns: 1fr 1fr; } }
+      .lbl { font-size: 12px; font-weight: 600; color: var(--muted-fg); }
+      .skill { display: inline-block; background: var(--primary-soft); color: var(--primary); font-size: 12px; padding: 4px 10px; border-radius: 999px; margin: 6px 6px 0 0; }
+
+      .ctas { display: flex; flex-direction: column; gap: 12px; margin-top: 22px; }
+      @media (min-width: 560px) { .ctas { flex-direction: row; } }
+      .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 48px; padding: 0 24px;
+        border-radius: 999px; font-weight: 600; font-size: 15px; text-decoration: none; border: 1px solid transparent; cursor: pointer; }
+      .btn.primary { background: var(--primary); color: var(--primary-fg); box-shadow: var(--shadow); }
+      .btn.outline { background: var(--card); color: var(--fg); border-color: var(--border); }
+      footer { color: var(--muted-fg); font-size: 12px; text-align: center; padding: 28px 0 8px; }
+
+      @media (prefers-reduced-motion: reduce) {
+        .reveal { opacity: 1; transform: none; animation: none; }
+        .ring .meter { animation: none; stroke-dashoffset: 133.7; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="top">
+      <div class="container row">
+        <div class="brand">
+          <span class="mark" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+          </span>
+          Navigator
+        </div>
+        <nav class="tabs hide-sm">
+          <a href="#">Assessment</a>
+          <a href="#" class="active">Results</a>
+          <a href="#">Plan</a>
+          <a href="#">Counselor</a>
+          <a href="#">Check-ins</a>
+        </nav>
+        <div class="langs" aria-label="Language">
+          <span>KK</span><span>RU</span><span class="on">EN</span>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <div class="container">
+        <!-- Hero -->
+        <section class="card hero reveal" style="animation-delay: 0ms">
+          <div>
+            <span class="badge accent">✦ Your profile</span>
+            <h1>Your direction is starting to become clear.</h1>
+            <p class="sub">This is not a final answer. It is a starting map.</p>
+            <p class="fine">You can change, retake, and refine this over time.</p>
+            <span class="route"><span class="dot"></span> Technological</span>
+          </div>
+          <div class="ring-wrap">
+            <div class="ring">
+              <svg width="168" height="168" viewBox="0 0 168 168">
+                <defs>
+                  <linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="hsl(245 58% 58%)" />
+                    <stop offset="100%" stop-color="hsl(18 92% 63%)" />
+                  </linearGradient>
+                </defs>
+                <circle class="track" cx="84" cy="84" r="76" />
+                <circle class="meter" cx="84" cy="84" r="76" />
+              </svg>
+              <div class="center">
+                <div>
+                  <div class="num" id="score">72</div>
+                  <div class="lab">Career Readiness Score</div>
+                </div>
+              </div>
+            </div>
+            <p class="fine" style="margin-top: 8px">Finding your footing</p>
+          </div>
+        </section>
+
+        <!-- Grid -->
+        <div class="grid2">
+          <section class="card pad reveal" style="animation-delay: 70ms">
+            <div class="icon p" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+            </div>
+            <h2 class="title">Your Direction</h2>
+            <p style="font-weight: 600; margin: 0">Technological</p>
+            <p class="muted" style="margin: 4px 0 0; font-size: 14px">Building, coding, and engineering the tools of the future.</p>
+          </section>
+
+          <section class="card pad reveal" style="animation-delay: 130ms">
+            <h2 class="title">Where you lean</h2>
+            <ul class="lean" style="list-style: none; padding: 0; margin: 12px 0 0">
+              <li><b>1. Digital innovator</b><span class="muted" style="font-size: 14px">You like to build with technology.</span></li>
+              <li><b>2. Researcher</b><span class="muted" style="font-size: 14px">You like to understand and analyze.</span></li>
+            </ul>
+          </section>
+
+          <section class="card pad reveal" style="animation-delay: 190ms">
+            <h2 class="title">Your Strengths</h2>
+            <div class="chips">
+              <span class="badge success">Interests</span>
+              <span class="badge success">Strengths</span>
+            </div>
+          </section>
+
+          <section class="card pad reveal" style="animation-delay: 250ms">
+            <div class="icon a" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+            </div>
+            <h2 class="title">Areas to Grow</h2>
+            <div class="chips">
+              <span class="badge outline">Values</span>
+              <span class="badge outline">Abilities</span>
+            </div>
+          </section>
+        </div>
+
+        <!-- Careers -->
+        <section class="card pad reveal" style="animation-delay: 310ms; margin-top: 16px">
+          <h2 class="title">Careers to Explore</h2>
+          <p class="muted" style="margin: 2px 0 0; font-size: 14px">curated demo relevance</p>
+
+          <div class="career">
+            <div class="head"><span class="name">AI Specialist</span><span class="badge primary">90% match</span></div>
+            <div>
+              <span class="reason">Matches your Technological direction</span>
+              <span class="reason">Fits your Digital innovator style</span>
+              <span class="reason">Connects to Informatics</span>
+            </div>
+            <div class="cols">
+              <div><span class="lbl">Skills to build</span><div><span class="skill">Machine learning</span><span class="skill">Coding</span></div></div>
+              <div><span class="lbl">A first step</span><p class="muted" style="margin: 6px 0 0; font-size: 13px">Spend an hour exploring one Technological career this week.</p></div>
+            </div>
+          </div>
+
+          <div class="career">
+            <div class="head"><span class="name">Software Developer</span><span class="badge primary">90% match</span></div>
+            <div>
+              <span class="reason">Matches your Technological direction</span>
+              <span class="reason">Connects to Informatics</span>
+              <span class="reason">Connects to Mathematics</span>
+            </div>
+            <div class="cols">
+              <div><span class="lbl">Skills to build</span><div><span class="skill">Coding</span><span class="skill">Problem solving</span></div></div>
+              <div><span class="lbl">A first step</span><p class="muted" style="margin: 6px 0 0; font-size: 13px">Spend an hour exploring one Technological career this week.</p></div>
+            </div>
+          </div>
+
+          <div class="career">
+            <div class="head"><span class="name">Data Analyst</span><span class="badge primary">89% match</span></div>
+            <div>
+              <span class="reason">Matches your Technological direction</span>
+              <span class="reason">Fits your Digital innovator style</span>
+              <span class="reason">Connects to Mathematics</span>
+            </div>
+            <div class="cols">
+              <div><span class="lbl">Skills to build</span><div><span class="skill">Analysis</span><span class="skill">Statistics</span></div></div>
+              <div><span class="lbl">A first step</span><p class="muted" style="margin: 6px 0 0; font-size: 13px">Spend an hour exploring one Technological career this week.</p></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- What this means -->
+        <section class="card pad reveal" style="animation-delay: 370ms; margin-top: 16px">
+          <h2 class="title">What this means</h2>
+          <p class="muted" style="margin: 8px 0 0">
+            Your answers point toward a direction that fits how you think and what you value.
+            Use it as a starting point, not a label.
+          </p>
+        </section>
+
+        <div class="ctas reveal" style="animation-delay: 430ms">
+          <a class="btn primary" href="#">Build my plan →</a>
+          <a class="btn outline" href="#">🤖 Ask AI counselor</a>
+        </div>
+
+        <footer>Navigator — a self-determination companion for students. Based on the “Navigator of Self-Determination” methodology.</footer>
+      </div>
+    </main>
+
+    <script>
+      // Count the readiness number up to match the ring animation (progressive enhancement).
+      (function () {
+        var el = document.getElementById('score');
+        if (!el) return;
+        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        var target = 72, start = null, dur = 1100;
+        function step(t) {
+          if (start === null) start = t;
+          var p = Math.min(1, (t - start) / dur);
+          el.textContent = Math.round(target * (0.2 + 0.8 * p) * (p < 0.2 ? 0 : 1)) || Math.round(target * p);
+          if (p < 1) requestAnimationFrame(step); else el.textContent = target;
+        }
+        el.textContent = '0';
+        requestAnimationFrame(step);
+      })();
+    </script>
+  </body>
+</html>
