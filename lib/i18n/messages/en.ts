@@ -92,6 +92,7 @@ const en = {
       submit: 'Sign in',
       switchPrompt: 'New here?',
       switchCta: 'Create an account',
+      continueWithGoogle: 'Continue with Google',
     },
     signUp: {
       title: 'Start your path',

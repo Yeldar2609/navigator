@@ -90,6 +90,7 @@ const ru: Messages = {
       submit: 'Войти',
       switchPrompt: 'Впервые здесь?',
       switchCta: 'Создать аккаунт',
+      continueWithGoogle: 'Продолжить с Google',
     },
     signUp: {
       title: 'Начни свой путь',

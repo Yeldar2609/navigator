@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { isDemoMode } from '@/lib/data/mode'
-import { signInOrUp } from '@/lib/auth/session'
+import { signInOrUp, signInWithGoogle } from '@/lib/auth/session'
 import { signInSchema, signUpSchema } from '@/lib/validations/auth'
 
 export function AuthForm({
@@ -55,6 +55,18 @@ export function AuthForm({
     const res = await signInOrUp(mode, email, password)
     if (!res.ok) {
       setError(res.error === 'not_configured' ? dict.auth.notice.setupBody : dict.auth.errors.generic)
+      setLoading(false)
+      return
+    }
+    router.push(`/${locale}/onboarding`)
+  }
+
+  async function onGoogle() {
+    setError(null)
+    setLoading(true)
+    const res = await signInWithGoogle()
+    if (!res.ok) {
+      if (res.error !== 'cancelled') setError(dict.auth.errors.generic)
       setLoading(false)
       return
     }
@@ -114,6 +126,16 @@ export function AuthForm({
 
       <Button type="submit" className="w-full" disabled={loading}>
         {loading ? dict.common.loading : t.submit}
+      </Button>
+
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full"
+        disabled={loading}
+        onClick={onGoogle}
+      >
+        {dict.auth.signIn.continueWithGoogle}
       </Button>
 
       <p className="text-center text-sm text-muted-foreground">

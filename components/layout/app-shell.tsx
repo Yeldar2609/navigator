@@ -6,6 +6,7 @@ import type { Messages } from '@/lib/i18n/dictionaries'
 import { BottomNav } from './bottom-nav'
 import { Container } from './container'
 import { LanguageSwitcher } from './language-switcher'
+import { SignOutButton } from './sign-out-button'
 import { StudentNav } from './student-nav'
 
 /** Authenticated student layout: header with nav + language switcher, content. */
@@ -33,7 +34,10 @@ export function AppShell({
               <StudentNav locale={locale} dict={dict} />
             </div>
           </div>
-          <LanguageSwitcher locale={locale} />
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher locale={locale} />
+            <SignOutButton locale={locale} label={dict.common.signOut} />
+          </div>
         </Container>
       </header>
       <main id="main-content" tabIndex={-1} className="py-8 pb-24 sm:py-10 md:pb-10 focus:outline-none">

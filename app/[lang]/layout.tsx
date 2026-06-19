@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import '../globals.css'
 import { isLocale, locales, type Locale } from '@/lib/i18n/config'
 import { getDictionary } from '@/lib/i18n/dictionaries'
+import { AuthProvider } from '@/components/auth/auth-provider'
 
 export const metadata: Metadata = {
   title: 'Navigator — Find your direction',
@@ -33,7 +34,7 @@ export default function LangLayout({
         >
           {dict.common.skipToContent}
         </a>
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   )

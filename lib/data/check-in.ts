@@ -1,5 +1,7 @@
 import { demoStore } from '@/lib/demo/store'
-import { isDemoMode } from './mode'
+import { getCurrentUid } from '@/lib/firebase/client'
+import { fsAddCheckIn } from '@/lib/firebase/firestore-client'
+import { isFirebaseMode } from './mode'
 import type { StoredCheckIn } from './types'
 
 export interface CheckInInput {
@@ -16,8 +18,8 @@ export function getCheckIns(): StoredCheckIn[] {
 }
 
 /**
- * Record a check-in. Demo mode persists locally; configured mode also fires the
- * server route (server resolves the profile + links the student's own plan).
+ * Record a check-in. Always persists locally; in Firebase mode it also writes
+ * to Firestore under users/{uid}/checkIns (best-effort).
  */
 export async function createCheckIn(input: CheckInInput): Promise<StoredCheckIn> {
   const entry: StoredCheckIn = {
@@ -31,21 +33,14 @@ export async function createCheckIn(input: CheckInInput): Promise<StoredCheckIn>
   }
   demoStore.addCheckIn(entry)
 
-  if (!isDemoMode()) {
-    try {
-      await fetch('/api/check-ins/create', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          moodScore: entry.mood,
-          confidenceScore: entry.confidence,
-          effortScore: entry.effort,
-          blocker: entry.blocker,
-          note: entry.note,
-        }),
-      })
-    } catch {
-      /* ignore — local entry already shown */
+  if (isFirebaseMode()) {
+    const uid = getCurrentUid()
+    if (uid) {
+      try {
+        await fsAddCheckIn(uid, entry)
+      } catch {
+        /* ignore — local entry already shown */
+      }
     }
   }
   return entry
