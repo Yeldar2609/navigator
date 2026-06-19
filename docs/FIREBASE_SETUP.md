@@ -19,13 +19,27 @@ these env vars (store as secrets in prod; see `SECRETS_SETUP.md`):
 The client SDK is wired in `lib/firebase/client.ts` and returns `null` until configured, so the app
 degrades gracefully (unauthenticated preview tier) instead of crashing.
 
-## 2. Admin service account (server)
-Console → Project settings → *Service accounts* → **Generate new private key** → download JSON. Map:
-- `FIREBASE_ADMIN_CLIENT_EMAIL` = JSON `client_email`
-- `FIREBASE_ADMIN_PRIVATE_KEY` = JSON `private_key` (keep the literal `\n`; the code restores them)
-- `FIREBASE_STORAGE_BUCKET` / `REPORT_BUCKET` = your bucket (e.g. `kim-bolam.appspot.com`)
+## 2. Admin credentials (server) — ADC, no key file
 
-Wired in `lib/firebase/admin.ts` (`verifyIdToken`, `getAuthedUser`, `getAdminDb`, `getAdminBucket`).
+> This org enforces `constraints/iam.disableServiceAccountKeyCreation`, so downloadable
+> service-account keys are blocked (the console "Generate new private key" fails, and so does
+> `gcloud ... keys create` with `FAILED_PRECONDITION`). We therefore use **Application Default
+> Credentials (ADC)** — which is also Google's recommended practice (no long-lived key to leak).
+
+- **Production (App Hosting / Cloud Run):** ADC is automatic via the runtime service account
+  (`887167045950-compute@developer.gserviceaccount.com` or the App Hosting backend SA). Leave the key
+  vars blank. Ensure that SA can reach Firestore + Storage (Editor by default covers it).
+- **Local dev:** run once, then ADC just works:
+  ```bash
+  gcloud auth application-default login
+  ```
+  `.env.local` already sets `FIREBASE_ADMIN_USE_ADC=true`.
+- **Optional explicit key:** if the org policy is ever lifted, set `FIREBASE_ADMIN_CLIENT_EMAIL` +
+  `FIREBASE_ADMIN_PRIVATE_KEY` and the code uses the key instead of ADC.
+- Bucket: `FIREBASE_STORAGE_BUCKET` / `REPORT_BUCKET` = `kim-bolam.firebasestorage.app`.
+
+Wired in `lib/firebase/admin.ts` (`verifyIdToken`, `getAuthedUser`, `getAdminDb`, `getAdminBucket`) —
+explicit key when present, else `applicationDefault()`.
 
 ## 3. Enable products
 - **Authentication** → Sign-in method → enable **Email/Password** (and Google if wanted).

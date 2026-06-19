@@ -43,12 +43,29 @@ export function isFirebaseClientConfigured(): boolean {
   )
 }
 
-export function isFirebaseAdminConfigured(): boolean {
+/** True when Application Default Credentials are likely available. */
+export function isAdcAvailable(): boolean {
   return Boolean(
-    process.env.FIREBASE_ADMIN_CLIENT_EMAIL &&
-      process.env.FIREBASE_ADMIN_PRIVATE_KEY &&
-      firebaseClientConfig.projectId,
+    process.env.GOOGLE_APPLICATION_CREDENTIALS ||
+      process.env.FIREBASE_ADMIN_USE_ADC === 'true' ||
+      process.env.K_SERVICE || // Cloud Run / Firebase App Hosting
+      process.env.K_REVISION ||
+      process.env.FUNCTION_TARGET || // Cloud Functions
+      process.env.GAE_ENV, // App Engine
   )
+}
+
+/**
+ * Admin is configured when the project id is known AND we have credentials —
+ * either an explicit service-account key OR ADC (the org disables downloadable
+ * keys, so ADC is the production path).
+ */
+export function isFirebaseAdminConfigured(): boolean {
+  if (!firebaseClientConfig.projectId) return false
+  const hasExplicitKey = Boolean(
+    process.env.FIREBASE_ADMIN_CLIENT_EMAIL && process.env.FIREBASE_ADMIN_PRIVATE_KEY,
+  )
+  return hasExplicitKey || isAdcAvailable()
 }
 
 /**
@@ -75,19 +92,21 @@ export const reportBucket =
   process.env.FIREBASE_STORAGE_BUCKET ||
   firebaseClientConfig.storageBucket
 
-/** Variables that MUST exist in a production deployment. */
-const PRODUCTION_REQUIRED = [
+/** Public client vars that MUST exist in a production deployment. */
+const PRODUCTION_REQUIRED_PUBLIC = [
   'NEXT_PUBLIC_FIREBASE_API_KEY',
   'NEXT_PUBLIC_FIREBASE_PROJECT_ID',
   'NEXT_PUBLIC_FIREBASE_APP_ID',
-  'FIREBASE_ADMIN_CLIENT_EMAIL',
-  'FIREBASE_ADMIN_PRIVATE_KEY',
 ] as const
 
-/** Throws in production if any critical variable is missing. No-op otherwise. */
+/** Throws in production if critical config is missing. No-op otherwise. */
 export function assertProductionEnv(): void {
   if (!isProd()) return
-  const missing = PRODUCTION_REQUIRED.filter((k) => !process.env[k])
+  const missing: string[] = PRODUCTION_REQUIRED_PUBLIC.filter((k) => !process.env[k])
+  // Admin credentials may be an explicit service-account key OR ADC.
+  if (!isFirebaseAdminConfigured()) {
+    missing.push('FIREBASE_ADMIN credentials (service-account key or ADC)')
+  }
   if (missing.length > 0) {
     throw new Error(
       `[Kim Bolam] Production is misconfigured — missing required env: ${missing.join(', ')}. ` +

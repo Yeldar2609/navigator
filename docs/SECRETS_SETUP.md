@@ -15,8 +15,8 @@ Create each in Secret Manager with the **same name** the app/`apphosting.yaml` e
 | `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` | web `storageBucket` |
 | `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | web `messagingSenderId` |
 | `NEXT_PUBLIC_FIREBASE_APP_ID` | web `appId` |
-| `FIREBASE_ADMIN_CLIENT_EMAIL` | service-account `client_email` |
-| `FIREBASE_ADMIN_PRIVATE_KEY` | service-account `private_key` (with `\n`) |
+| `FIREBASE_ADMIN_CLIENT_EMAIL` | *(optional)* service-account `client_email` — **omit; use ADC** |
+| `FIREBASE_ADMIN_PRIVATE_KEY` | *(optional)* service-account `private_key` — **blocked by org policy; use ADC** |
 | `REPORT_BUCKET` | reports bucket (e.g. `kim-bolam.appspot.com`) |
 | `DIALOGFLOW_CX_LOCATION` | agent region (once created) |
 | `DIALOGFLOW_CX_AGENT_ID` | agent id (once created) |

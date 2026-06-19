@@ -19,8 +19,10 @@ These are the blockers that stop a fully-autonomous deploy. Do them once.
 2. **Create a Firebase Web App** to obtain the `NEXT_PUBLIC_FIREBASE_*` values:
    Firebase console → Project settings → *Your apps* → Web → register → copy the config.
    Put the values in Secret Manager (see `SECRETS_SETUP.md`).
-3. **Create the Admin service account key** (`FIREBASE_ADMIN_CLIENT_EMAIL` / `_PRIVATE_KEY`):
-   console → Project settings → *Service accounts* → Generate new private key.
+3. **Admin credentials — use ADC, not a key.** The org blocks downloadable keys
+   (`iam.disableServiceAccountKeyCreation`). Production uses the runtime service account
+   automatically; for local/admin tooling run `gcloud auth application-default login`. See
+   `FIREBASE_SETUP.md` §2.
 4. **Enable Firebase Auth providers**: Authentication → Sign-in method → enable Email/Password
    (and Google if desired).
 5. **(Optional, for AI)** create the Dialogflow CX agent — see `CONVERSATIONAL_AGENT_SETUP.md`.

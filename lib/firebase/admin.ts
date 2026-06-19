@@ -5,7 +5,7 @@
  * null when admin credentials are absent so route handlers can fail soft in dev;
  * production fails closed via `assertProductionEnv()` at the call site.
  */
-import { cert, getApps, initializeApp, type App } from 'firebase-admin/app'
+import { applicationDefault, cert, getApps, initializeApp, type App } from 'firebase-admin/app'
 import { getAuth, type DecodedIdToken } from 'firebase-admin/auth'
 import { getFirestore, type Firestore } from 'firebase-admin/firestore'
 import { getStorage } from 'firebase-admin/storage'
@@ -27,13 +27,23 @@ export function getAdminApp(): App | null {
     return cachedApp
   }
 
+  // Prefer an explicit service-account key when provided; otherwise fall back to
+  // Application Default Credentials (ADC) — the runtime service account on App
+  // Hosting / Cloud Run, or `gcloud auth application-default login` locally. ADC
+  // is required where org policy disables downloadable service-account keys.
+  const hasExplicitKey = Boolean(
+    process.env.FIREBASE_ADMIN_CLIENT_EMAIL && process.env.FIREBASE_ADMIN_PRIVATE_KEY,
+  )
   cachedApp = initializeApp({
-    credential: cert({
-      projectId: firebaseClientConfig.projectId,
-      clientEmail: process.env.FIREBASE_ADMIN_CLIENT_EMAIL as string,
-      // Secret Manager / .env store the key with literal \n — restore newlines.
-      privateKey: (process.env.FIREBASE_ADMIN_PRIVATE_KEY as string).replace(/\\n/g, '\n'),
-    }),
+    credential: hasExplicitKey
+      ? cert({
+          projectId: firebaseClientConfig.projectId,
+          clientEmail: process.env.FIREBASE_ADMIN_CLIENT_EMAIL as string,
+          // Secret Manager / .env store the key with literal \n — restore newlines.
+          privateKey: (process.env.FIREBASE_ADMIN_PRIVATE_KEY as string).replace(/\\n/g, '\n'),
+        })
+      : applicationDefault(),
+    projectId: firebaseClientConfig.projectId || process.env.GOOGLE_CLOUD_PROJECT,
     storageBucket: reportBucket,
   })
   return cachedApp

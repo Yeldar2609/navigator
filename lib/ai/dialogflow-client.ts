@@ -26,11 +26,20 @@ const TIMEOUT_MS = 20_000
 let cachedAuth: GoogleAuth | null = null
 function getAuth(): GoogleAuth {
   if (cachedAuth) return cachedAuth
+  const hasExplicitKey = Boolean(
+    process.env.FIREBASE_ADMIN_CLIENT_EMAIL && process.env.FIREBASE_ADMIN_PRIVATE_KEY,
+  )
   cachedAuth = new GoogleAuth({
-    credentials: {
-      client_email: process.env.FIREBASE_ADMIN_CLIENT_EMAIL,
-      private_key: process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    },
+    // Explicit service-account key when provided; otherwise ADC (runtime SA on
+    // App Hosting / Cloud Run, or `gcloud auth application-default login` locally).
+    ...(hasExplicitKey
+      ? {
+          credentials: {
+            client_email: process.env.FIREBASE_ADMIN_CLIENT_EMAIL,
+            private_key: process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+          },
+        }
+      : {}),
     scopes: ['https://www.googleapis.com/auth/cloud-platform'],
   })
   return cachedAuth

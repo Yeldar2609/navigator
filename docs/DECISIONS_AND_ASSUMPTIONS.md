@@ -12,6 +12,11 @@ separately at the end.
   before sign-in; full results require sign-in to persist (matches the landing-flow spec).
 - **Auth model:** Firebase Auth; server routes verify the Firebase ID token
   (`lib/firebase/admin.ts → getAuthedUser`). Client-supplied user IDs are never trusted.
+- **Admin credentials via ADC, not a key file.** The org enforces
+  `iam.disableServiceAccountKeyCreation` (downloadable keys blocked), so `lib/firebase/admin.ts` uses
+  `applicationDefault()` — the runtime service account in production, `gcloud auth application-default
+  login` locally. An explicit key is still honored if the policy is ever lifted. This is also Google's
+  recommended posture (no long-lived key to leak).
 
 ## AI counselor
 - **Disabled-but-wired by default.** No Dialogflow CX agent exists yet, so the counselor uses the
@@ -52,9 +57,15 @@ separately at the end.
 - The "export chat" analytics item is interpreted as **report export / a chat-sent event** — chat
   content is never exportable.
 
-## True blockers (human-only; deploy cannot complete without them)
-1. Firebase **Web App** config values (`NEXT_PUBLIC_FIREBASE_*`).
-2. Firebase **Admin** service-account key (`FIREBASE_ADMIN_*`).
-3. CLI auth: `firebase login`, `gcloud auth login` (+ `gcloud` on PATH).
-4. (AI only) Dialogflow CX **agent** (`DIALOGFLOW_CX_LOCATION` / `_AGENT_ID`).
-5. First-admin custom claim bootstrap.
+## Setup status (live — updated 2026-06-19)
+1. Firebase **Web App** config (`NEXT_PUBLIC_FIREBASE_*`) — ✅ DONE (app created; values in `.env.local`).
+2. Firebase added to the `kim-bolam` GCP project — ✅ DONE.
+3. CLI auth (`firebase`, `gcloud` as `yeldar@american-study.com`) — ✅ DONE.
+4. Required APIs (identitytoolkit, firestore, firebasestorage, run, cloudbuild, secretmanager) — ✅ enabled.
+5. Firebase **Admin** credentials — **ADC** (org blocks key files): auto in prod; `gcloud auth
+   application-default login` locally. No key needed.
+6. **Email/Password** sign-in — ⏳ needs the one-time Firebase Auth "Get started" provisioning (console),
+   then it's a single toggle.
+7. **Firestore DB + Storage bucket** — ⏳ pending region choice (permanent), then created + rules deployed.
+8. (AI) Dialogflow CX **agent** — not created; counselor stays safely disabled.
+9. First-admin custom claim — bootstrap after the first sign-up.
