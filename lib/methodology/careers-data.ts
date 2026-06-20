@@ -7,6 +7,16 @@ import type { Route } from './routes'
 // curated demo signal, NOT live labor-market data. Subject tags use the same
 // keys as onboarding favorite_subjects so overlap scoring works.
 
+// --- Provenance (Day-6) ----------------------------------------------------
+// Where a salary or demand signal comes from. Official sources are the Electronic
+// Labour Exchange (Enbek, enbek.kz) and the Bureau of National Statistics
+// (stat.gov.kz, average nominal wage by economic activity/region). `curated_estimate`
+// means the figure is a hand-curated, clearly-labeled estimate that is NOT yet
+// verified against those datasets. See docs/DATA_SOURCES.md.
+export type SalarySource = 'enbek' | 'stat_gov_kz' | 'curated_estimate'
+export type DemandSource = 'enbek' | 'curated_estimate'
+export type DemandTrend = 'growing' | 'stable' | 'declining'
+
 export interface Career {
   slug: string
   route: Route
@@ -16,6 +26,14 @@ export interface Career {
   skillTags: string[]
   marketRelevance: number // 0..100 curated demo relevance
   name: Record<Locale, string>
+  // --- Optional provenance fields (all optional so existing data/consumers stay
+  // valid). Displayed figures must be shown as curated estimates pending
+  // verification against Enbek / stat.gov.kz. ---
+  // TODO(provenance): replace curated estimates with verified Enbek/stat.gov.kz figures.
+  salaryEstimateKzt?: string // e.g. "250000–450000 ₸/мес" — curated monthly range
+  salarySource?: SalarySource
+  demandTrend?: DemandTrend
+  demandSource?: DemandSource
 }
 
 export const CAREERS: Career[] = [
@@ -29,6 +47,12 @@ export const CAREERS: Career[] = [
     skillTags: ['coding', 'problem_solving'],
     marketRelevance: 95,
     name: { en: 'Software Developer', ru: 'Разработчик ПО', kk: 'Бағдарламашы' },
+    // Curated estimate anchored to stat.gov.kz "information & communication" sector
+    // (~1.9x the national average nominal wage of ~423k ₸/mo, Q1 2025). Not verified.
+    salaryEstimateKzt: '400000–900000 ₸/мес',
+    salarySource: 'curated_estimate',
+    demandTrend: 'growing',
+    demandSource: 'curated_estimate',
   },
   {
     slug: 'data_analyst',
@@ -39,6 +63,10 @@ export const CAREERS: Career[] = [
     skillTags: ['analysis', 'statistics'],
     marketRelevance: 90,
     name: { en: 'Data Analyst', ru: 'Аналитик данных', kk: 'Дерек талдаушысы' },
+    salaryEstimateKzt: '350000–750000 ₸/мес',
+    salarySource: 'curated_estimate',
+    demandTrend: 'growing',
+    demandSource: 'curated_estimate',
   },
   {
     slug: 'ai_specialist',
@@ -49,6 +77,10 @@ export const CAREERS: Career[] = [
     skillTags: ['ml', 'coding'],
     marketRelevance: 96,
     name: { en: 'AI Specialist', ru: 'Специалист по ИИ', kk: 'ЖИ маманы' },
+    salaryEstimateKzt: '500000–1200000 ₸/мес',
+    salarySource: 'curated_estimate',
+    demandTrend: 'growing',
+    demandSource: 'curated_estimate',
   },
   {
     slug: 'cybersecurity_specialist',
@@ -63,6 +95,10 @@ export const CAREERS: Career[] = [
       ru: 'Специалист по кибербезопасности',
       kk: 'Киберқауіпсіздік маманы',
     },
+    salaryEstimateKzt: '450000–1000000 ₸/мес',
+    salarySource: 'curated_estimate',
+    demandTrend: 'growing',
+    demandSource: 'curated_estimate',
   },
   {
     slug: 'robotics_engineer',
@@ -84,6 +120,10 @@ export const CAREERS: Career[] = [
     skillTags: ['empathy', 'analysis'],
     marketRelevance: 80,
     name: { en: 'Psychologist', ru: 'Психолог', kk: 'Психолог' },
+    salaryEstimateKzt: '200000–500000 ₸/мес',
+    salarySource: 'curated_estimate',
+    demandTrend: 'growing',
+    demandSource: 'curated_estimate',
   },
   {
     slug: 'medical_doctor',
@@ -94,6 +134,12 @@ export const CAREERS: Career[] = [
     skillTags: ['diagnosis', 'care'],
     marketRelevance: 88,
     name: { en: 'Doctor', ru: 'Врач', kk: 'Дәрігер' },
+    // Curated estimate; public-sector health wages sit near/below the national
+    // average per stat.gov.kz, with wide private-clinic spread. Not verified.
+    salaryEstimateKzt: '250000–600000 ₸/мес',
+    salarySource: 'curated_estimate',
+    demandTrend: 'growing',
+    demandSource: 'curated_estimate',
   },
   {
     slug: 'biologist',
@@ -114,6 +160,12 @@ export const CAREERS: Career[] = [
     skillTags: ['analysis', 'modeling'],
     marketRelevance: 78,
     name: { en: 'Economist', ru: 'Экономист', kk: 'Экономист' },
+    // Curated estimate anchored to stat.gov.kz "professional, scientific &
+    // technical" sector (~1.5x national average). Not verified.
+    salaryEstimateKzt: '300000–650000 ₸/мес',
+    salarySource: 'curated_estimate',
+    demandTrend: 'stable',
+    demandSource: 'curated_estimate',
   },
   {
     slug: 'education_researcher',
@@ -139,6 +191,10 @@ export const CAREERS: Career[] = [
     skillTags: ['planning', 'communication'],
     marketRelevance: 85,
     name: { en: 'Project Manager', ru: 'Менеджер проектов', kk: 'Жоба менеджері' },
+    salaryEstimateKzt: '400000–800000 ₸/мес',
+    salarySource: 'curated_estimate',
+    demandTrend: 'growing',
+    demandSource: 'curated_estimate',
   },
   {
     slug: 'entrepreneur',
@@ -149,6 +205,11 @@ export const CAREERS: Career[] = [
     skillTags: ['leadership', 'risk'],
     marketRelevance: 88,
     name: { en: 'Entrepreneur', ru: 'Предприниматель', kk: 'Кәсіпкер' },
+    // Highly variable; income depends on the venture. Curated, not verified.
+    salaryEstimateKzt: '200000–2000000 ₸/мес',
+    salarySource: 'curated_estimate',
+    demandTrend: 'stable',
+    demandSource: 'curated_estimate',
   },
   {
     slug: 'business_analyst',
@@ -183,6 +244,10 @@ export const CAREERS: Career[] = [
     skillTags: ['argument', 'writing'],
     marketRelevance: 80,
     name: { en: 'Lawyer', ru: 'Юрист', kk: 'Заңгер' },
+    salaryEstimateKzt: '300000–800000 ₸/мес',
+    salarySource: 'curated_estimate',
+    demandTrend: 'stable',
+    demandSource: 'curated_estimate',
   },
   // social_humanitarian
   {
@@ -194,6 +259,12 @@ export const CAREERS: Career[] = [
     skillTags: ['communication', 'patience'],
     marketRelevance: 82,
     name: { en: 'Teacher', ru: 'Учитель', kk: 'Мұғалім' },
+    // Curated estimate; education-sector wages sit below the national average per
+    // stat.gov.kz, though state pay reforms have raised them. Not verified.
+    salaryEstimateKzt: '200000–450000 ₸/мес',
+    salarySource: 'curated_estimate',
+    demandTrend: 'stable',
+    demandSource: 'curated_estimate',
   },
   {
     slug: 'hr_specialist',
@@ -214,6 +285,10 @@ export const CAREERS: Career[] = [
     skillTags: ['empathy', 'support'],
     marketRelevance: 70,
     name: { en: 'Social Worker', ru: 'Социальный работник', kk: 'Әлеуметтік қызметкер' },
+    salaryEstimateKzt: '170000–350000 ₸/мес',
+    salarySource: 'curated_estimate',
+    demandTrend: 'stable',
+    demandSource: 'curated_estimate',
   },
   {
     slug: 'diplomat',
@@ -249,6 +324,12 @@ export const CAREERS: Career[] = [
     skillTags: ['design', 'empathy'],
     marketRelevance: 88,
     name: { en: 'UX/UI Designer', ru: 'UX/UI-дизайнер', kk: 'UX/UI дизайнер' },
+    // Curated estimate; digital/design roles trend toward the higher-paying
+    // information & communication sector (stat.gov.kz). Not verified.
+    salaryEstimateKzt: '300000–700000 ₸/мес',
+    salarySource: 'curated_estimate',
+    demandTrend: 'growing',
+    demandSource: 'curated_estimate',
   },
   {
     slug: 'architect',
@@ -259,6 +340,10 @@ export const CAREERS: Career[] = [
     skillTags: ['design', 'drafting'],
     marketRelevance: 80,
     name: { en: 'Architect', ru: 'Архитектор', kk: 'Сәулетші' },
+    salaryEstimateKzt: '250000–600000 ₸/мес',
+    salarySource: 'curated_estimate',
+    demandTrend: 'stable',
+    demandSource: 'curated_estimate',
   },
   {
     slug: 'journalist',
@@ -289,6 +374,10 @@ export const CAREERS: Career[] = [
     skillTags: ['communication', 'analysis'],
     marketRelevance: 86,
     name: { en: 'Marketing Specialist', ru: 'Маркетолог', kk: 'Маркетолог' },
+    salaryEstimateKzt: '250000–600000 ₸/мес',
+    salarySource: 'curated_estimate',
+    demandTrend: 'growing',
+    demandSource: 'curated_estimate',
   },
 
   // --- Day-3 expansion to 8 careers per route ---
@@ -302,6 +391,10 @@ export const CAREERS: Career[] = [
     skillTags: ['cloud', 'networks'],
     marketRelevance: 90,
     name: { en: 'Cloud Engineer', ru: 'Облачный инженер', kk: 'Бұлттық инженер' },
+    salaryEstimateKzt: '450000–950000 ₸/мес',
+    salarySource: 'curated_estimate',
+    demandTrend: 'growing',
+    demandSource: 'curated_estimate',
   },
   {
     slug: 'game_developer',
@@ -322,6 +415,10 @@ export const CAREERS: Career[] = [
     skillTags: ['automation', 'coding'],
     marketRelevance: 88,
     name: { en: 'DevOps Engineer', ru: 'DevOps-инженер', kk: 'DevOps инженері' },
+    salaryEstimateKzt: '500000–1000000 ₸/мес',
+    salarySource: 'curated_estimate',
+    demandTrend: 'growing',
+    demandSource: 'curated_estimate',
   },
   // research
   {
@@ -374,6 +471,12 @@ export const CAREERS: Career[] = [
     skillTags: ['analysis', 'finance'],
     marketRelevance: 86,
     name: { en: 'Financial Analyst', ru: 'Финансовый аналитик', kk: 'Қаржы талдаушысы' },
+    // Curated estimate; finance/insurance is among the higher-paying sectors
+    // (stat.gov.kz). Not verified.
+    salaryEstimateKzt: '350000–800000 ₸/мес',
+    salarySource: 'curated_estimate',
+    demandTrend: 'stable',
+    demandSource: 'curated_estimate',
   },
   {
     slug: 'operations_manager',
@@ -395,6 +498,10 @@ export const CAREERS: Career[] = [
     skillTags: ['care', 'empathy'],
     marketRelevance: 84,
     name: { en: 'Nurse', ru: 'Медсестра', kk: 'Медбике' },
+    salaryEstimateKzt: '180000–400000 ₸/мес',
+    salarySource: 'curated_estimate',
+    demandTrend: 'growing',
+    demandSource: 'curated_estimate',
   },
   {
     slug: 'translator',
@@ -426,6 +533,10 @@ export const CAREERS: Career[] = [
     skillTags: ['design', 'visual'],
     marketRelevance: 80,
     name: { en: 'Graphic Designer', ru: 'Графический дизайнер', kk: 'Графикалық дизайнер' },
+    salaryEstimateKzt: '200000–500000 ₸/мес',
+    salarySource: 'curated_estimate',
+    demandTrend: 'stable',
+    demandSource: 'curated_estimate',
   },
   {
     slug: 'filmmaker',
@@ -604,6 +715,12 @@ export const CAREERS: Career[] = [
     skillTags: ['fieldwork', 'analysis'],
     marketRelevance: 78,
     name: { en: 'Geologist', ru: 'Геолог', kk: 'Геолог' },
+    // Curated estimate anchored to stat.gov.kz "mining & quarrying" sector, the
+    // highest-paying activity (~2.1x national average). Not verified.
+    salaryEstimateKzt: '400000–1000000 ₸/мес',
+    salarySource: 'curated_estimate',
+    demandTrend: 'stable',
+    demandSource: 'curated_estimate',
   },
   {
     slug: 'pharmacist',
@@ -726,6 +843,10 @@ export const CAREERS: Career[] = [
     skillTags: ['finance', 'organization'],
     marketRelevance: 78,
     name: { en: 'Accountant', ru: 'Бухгалтер', kk: 'Бухгалтер' },
+    salaryEstimateKzt: '220000–500000 ₸/мес',
+    salarySource: 'curated_estimate',
+    demandTrend: 'stable',
+    demandSource: 'curated_estimate',
   },
   {
     slug: 'auditor',
