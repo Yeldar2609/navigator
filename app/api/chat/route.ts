@@ -20,6 +20,7 @@ import {
   type CounselorFactors,
 } from '@/lib/ai/counselor'
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
+import { isAiCounselorConfigured } from '@/lib/env'
 import { fail, ok, parseBody } from '@/lib/utils/api'
 import { interpolate } from '@/lib/utils/format'
 
@@ -81,6 +82,19 @@ function buildFactors(
 }
 
 export async function POST(request: Request) {
+  // Fail CLOSED: the AI counselor is disabled-safe. When it is not configured
+  // (no Dialogflow CX agent) we return 503 BEFORE any other work — this closes
+  // the unauthenticated-public-endpoint hole (the route never touches Supabase
+  // or the deterministic template fallback) and matches the disabled chat UI.
+  //
+  // NOTE: When AI is enabled, the configured path below currently authenticates
+  // via Supabase. On this Firebase deployment it must instead verify the
+  // Firebase ID token (getAuthedUser from '@/lib/firebase/admin') before
+  // trusting the caller. That rewiring is required when ENABLE_AI_COUNSELOR=true.
+  if (!isAiCounselorConfigured()) {
+    return fail('ai_unavailable', 503)
+  }
+
   const parsed = await parseBody(request, chatRequestSchema)
   if (!parsed.success) return parsed.response
   const { threadId, message, locale: rawLocale } = parsed.data

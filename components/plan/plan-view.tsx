@@ -15,6 +15,7 @@ import {
   setPlanItemStatus,
 } from '@/lib/data/plan'
 import type { PlanItemStatus, StoredPlan, StoredResult } from '@/lib/data/types'
+import { useAuth } from '@/components/auth/auth-provider'
 import { buttonVariants } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
 import { LoadingState } from '@/components/ui/loading-state'
@@ -25,6 +26,7 @@ import { cn } from '@/lib/utils/cn'
 import { interpolate } from '@/lib/utils/format'
 
 export function PlanView({ locale, dict }: { locale: Locale; dict: Messages }) {
+  const { hydrated } = useAuth()
   const tp = dict.d2.plan
   const tpp = dict.d3.plan
   const [plan, setPlan] = React.useState<StoredPlan | null | undefined>(undefined)
@@ -34,10 +36,15 @@ export function PlanView({ locale, dict }: { locale: Locale; dict: Messages }) {
   const [justWon, setJustWon] = React.useState(false)
   const winTimer = React.useRef<number | null>(null)
 
+  // Wait for post-auth hydration before reading the store, so a returning user
+  // reloading cold never sees the empty plan state before Firestore data lands.
+  // While `!hydrated`, `plan` stays `undefined` → LoadingState keeps showing.
   React.useEffect(() => {
-    setPlan(getPlan())
-    setResult(getLatestResult())
-  }, [])
+    if (hydrated) {
+      setPlan(getPlan())
+      setResult(getLatestResult())
+    }
+  }, [hydrated])
 
   React.useEffect(
     () => () => {
