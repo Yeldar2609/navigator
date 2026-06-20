@@ -82,7 +82,15 @@ function AssistantBubble({
   )
 }
 
-export function ChatView({ locale, dict }: { locale: Locale; dict: Messages }) {
+export function ChatView({
+  locale,
+  dict,
+  aiEnabled,
+}: {
+  locale: Locale
+  dict: Messages
+  aiEnabled: boolean
+}) {
   const t = dict.d4.chat
   const p = dict.d4.prompts
   const reduce = useReducedMotion()
@@ -125,6 +133,31 @@ export function ChatView({ locale, dict }: { locale: Locale; dict: Messages }) {
     } finally {
       setSending(false)
     }
+  }
+
+  // Disabled-safe state: when the AI counselor is not configured we must NOT
+  // present a fake AI chat. Show an honest "coming soon" panel — no Bot avatar,
+  // no "AI guide" framing, no composer, no template replies — with a single CTA
+  // back to results. (Hooks above always run, preserving Rules of Hooks.)
+  if (!aiEnabled) {
+    return (
+      <div className="mx-auto flex max-w-2xl flex-col">
+        <div>
+          <h1 className="text-2xl font-bold">{dict.chat.title}</h1>
+          <p className="mt-1.5 text-muted-foreground">{dict.chat.subtitle}</p>
+        </div>
+        <div className="mt-6 rounded-2xl border bg-card p-6 text-center shadow-soft">
+          <p className="text-sm text-muted-foreground">{dict.chat.shellNote}</p>
+          <Link
+            href={`/${locale}/results`}
+            className={cn(buttonVariants({ variant: 'primary', size: 'sm' }), 'mt-4')}
+          >
+            {t.actionResults}
+          </Link>
+        </div>
+        <p className="mt-3 text-center text-xs text-muted-foreground">{dict.chat.disclaimer}</p>
+      </div>
+    )
   }
 
   return (
