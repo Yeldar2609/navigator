@@ -71,3 +71,27 @@ env:
     value: kim-bolam.firebasestorage.app
     availability:
       - RUNTIME
+  # --- AI counselor (Google Conversational Agents / Dialogflow CX) ---
+  # Identifiers, not secrets. BUILD+RUNTIME so the chat page (server component)
+  # and the /api/chat route both see the configured flag. The App Hosting runtime
+  # SA must hold roles/dialogflow.client to call detectIntent.
+  - variable: ENABLE_AI_COUNSELOR
+    value: "true"
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: DIALOGFLOW_CX_PROJECT_ID
+    value: kim-bolam
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: DIALOGFLOW_CX_LOCATION
+    value: asia-south1
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: DIALOGFLOW_CX_AGENT_ID
+    value: "981bbed9-58a5-4a40-b0ae-c6feed435687"
+    availability:
+      - BUILD
+      - RUNTIME
