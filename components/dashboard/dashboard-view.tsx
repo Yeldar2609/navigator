@@ -25,6 +25,7 @@ import {
   setPlanItemStatus,
 } from '@/lib/data/plan'
 import type { StoredPlan, StoredProfile, StoredResult } from '@/lib/data/types'
+import { useAuth } from '@/components/auth/auth-provider'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { RouteBadge } from '@/components/ui/route-badge'
@@ -40,6 +41,7 @@ import { interpolate } from '@/lib/utils/format'
  *  step, readiness, and top match into one place. Reads the local store. */
 export function DashboardView({ locale, dict }: { locale: Locale; dict: Messages }) {
   const router = useRouter()
+  const { hydrated } = useAuth()
   const dd = dict.d3.dashboard
   const tr = dict.d2.results
 
@@ -60,9 +62,12 @@ export function DashboardView({ locale, dict }: { locale: Locale; dict: Messages
     setReady(true)
   }, [])
 
+  // Wait for post-auth hydration before reading the store, so a returning user
+  // reloading cold never flashes the "take the test" invite against an empty
+  // cache. `hydrated` resolves promptly in demo mode (no user to hydrate).
   React.useEffect(() => {
-    refresh()
-  }, [refresh])
+    if (hydrated) refresh()
+  }, [hydrated, refresh])
 
   React.useEffect(
     () => () => {

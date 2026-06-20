@@ -17,6 +17,7 @@ import {
 import { getLatestResult, retakeAssessment } from '@/lib/data/assessment'
 import { generatePlan } from '@/lib/data/plan'
 import type { StoredResult } from '@/lib/data/types'
+import { useAuth } from '@/components/auth/auth-provider'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { RouteBadge } from '@/components/ui/route-badge'
@@ -57,14 +58,18 @@ function Band({
 
 export function ResultsView({ locale, dict }: { locale: Locale; dict: Messages }) {
   const router = useRouter()
+  const { hydrated } = useAuth()
   const tr = dict.d2.results
   const td = dict.d3
   const [result, setResult] = React.useState<StoredResult | null | undefined>(undefined)
   const [generating, setGenerating] = React.useState(false)
 
+  // Only read the store once post-auth hydration has settled, so a returning
+  // user reloading cold never sees the empty state before Firestore data lands.
+  // While `!hydrated`, `result` stays `undefined` → the skeleton keeps showing.
   React.useEffect(() => {
-    setResult(getLatestResult())
-  }, [])
+    if (hydrated) setResult(getLatestResult())
+  }, [hydrated])
 
   if (result === undefined) {
     return (

@@ -59,8 +59,10 @@ export function getDemoUser() {
 }
 
 export async function signOutClient(): Promise<void> {
+  // Clear the local cache in ALL modes so a sign-out wipes the previous student's
+  // profile/result/plan/checkins on a shared device — not just in demo mode.
+  demoStore.signOut()
   if (isDemoMode()) {
-    demoStore.signOut()
     return
   }
   await signOutFirebase()
