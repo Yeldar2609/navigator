@@ -56,3 +56,24 @@ are the agenda before a real school/government pilot.
 - **Deploy is prepared, not executed** here — see the human-only checklist in `DEPLOYMENT.md` /
   `DAY_6_NOTES.md` (Firebase web app, admin key, `firebase login`/`gcloud` PATH, Dialogflow agent,
   first-admin claim).
+
+## Day 7 — public go-live (honest list)
+The app is now **LIVE and public** on Firebase App Hosting
+(https://kimbolam--kim-bolam.europe-west4.hosted.app). Remaining honest limitations:
+- **Adaptive assessment is productized, not validated.** The branching/scoring is deterministic and
+  documented, but **not yet externally psychometrically validated** against the thesis instrument.
+- **Salary / demand figures are curated estimates.** Labeled with provenance; must be verified
+  against official KZ sources (Enbek, stat.gov.kz) before a real pilot.
+- **University data must be verified.** Curated demo data pending official university-program sources.
+- **Kazakh AI needs QA.** When the AI counselor is enabled, kk responses require additional review.
+- **AI is guidance, not authority.** The counselor is **not** a human counselor, therapist, or
+  official admissions authority. It ships **disabled** (deterministic guardrails + template fallback,
+  `ai_meta.fallback`); enabling it requires creating a Dialogflow CX agent.
+- **Admin dashboard still reads Supabase.** Deferred at Day 6/7; admin CSV/PDF/delete do not work
+  against the live Firebase data until the cutover. Not on the student critical path; not publicly
+  reachable. See `POST_LAUNCH_BACKLOG.md`.
+- **Cloud Run cannot be made public.** Org Domain Restricted Sharing
+  (`iam.allowedPolicyMemberDomains`) blocks the `allUsers` grant, so the Cloud Run service stays
+  private. App Hosting is the public path; Cloud Run is the alternate/backup.
+- **Password reset not wired**; **server-side PDF** is still printable HTML — both post-launch.
+- **Not indexed yet** — `robots` noindex on purpose until the team is ready.
