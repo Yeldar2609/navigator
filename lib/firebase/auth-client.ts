@@ -110,8 +110,13 @@ export function onFirebaseAuthChange(cb: (user: User | null) => void): () => voi
   return onAuthStateChanged(auth, cb)
 }
 
-/** Fresh ID token for the current user (for Authorization: Bearer on server calls). */
-export async function getIdToken(): Promise<string | null> {
+/**
+ * Fresh ID token for the current user (for Authorization: Bearer on server calls).
+ * Pass `forceRefresh` to bypass the ~1h client cache and re-fetch from Firebase —
+ * needed right after a custom claim (e.g. `admin`) is granted, since the cached
+ * token won't carry the new claim until it naturally expires or is refreshed.
+ */
+export async function getIdToken(forceRefresh = false): Promise<string | null> {
   const user = getFirebaseAuth()?.currentUser
-  return user ? user.getIdToken() : null
+  return user ? user.getIdToken(forceRefresh) : null
 }
