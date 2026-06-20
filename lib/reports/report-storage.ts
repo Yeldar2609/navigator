@@ -1,22 +1,14 @@
 /**
  * Cloud Storage helpers for private student reports.
  *
- * Reports live under `reports/{uid}/` in a private bucket. Writes happen ONLY
- * here, server-side via the Admin SDK (Storage rules deny all client writes);
- * reads for the owner go through a short-lived v4 signed URL. Identity always
+ * Reports are returned to the caller as PDF bytes directly; we ALSO best-effort
+ * archive a copy under `reports/{uid}/` in a private bucket (writes happen only
+ * here, server-side via the Admin SDK; Storage rules deny all client writes).
+ * Archiving must never break the download, so it swallows every error — a
+ * missing bucket or a failed write just means no archived copy. Identity always
  * comes from the verified token's uid at the call site — never from the body.
  */
 import { getAdminBucket } from '@/lib/firebase/admin'
-
-/** How long a download link stays valid. Short, since it can be re-requested. */
-export const SIGNED_URL_TTL_MS = 15 * 60 * 1000 // 15 minutes
-
-export interface StoredReport {
-  /** Object path within the bucket, e.g. `reports/<uid>/report-<ts>.pdf`. */
-  path: string
-  /** Short-lived authorized download URL (v4 signed, read-only). */
-  url: string
-}
 
 /** Storage object path for a freshly generated report. */
 export function reportObjectPath(uid: string, at: number = Date.now()): string {
@@ -27,33 +19,28 @@ export function reportObjectPath(uid: string, at: number = Date.now()): string {
 }
 
 /**
- * Upload a rendered PDF for `uid` and return its path + a signed read URL.
- * Throws if the bucket is unavailable (caller should fail soft before calling).
+ * Best-effort archive of a rendered PDF for `uid` under their own prefix.
+ *
+ * NEVER throws: a missing bucket (e.g. App Hosting without a configured bucket)
+ * or a write failure must not break the download path. The PDF bytes are
+ * returned to the caller regardless of whether this succeeds.
  */
-export async function uploadReport(uid: string, pdf: Buffer): Promise<StoredReport> {
-  const bucket = getAdminBucket()
-  if (!bucket) {
-    throw new Error('report_bucket_unavailable')
-  }
+export async function archiveReport(uid: string, pdf: Buffer): Promise<void> {
+  try {
+    const bucket = getAdminBucket()
+    if (!bucket) return
 
-  const path = reportObjectPath(uid)
-  const file = bucket.file(path)
-
-  await file.save(pdf, {
-    contentType: 'application/pdf',
-    resumable: false,
-    metadata: {
+    const path = reportObjectPath(uid)
+    await bucket.file(path).save(pdf, {
       contentType: 'application/pdf',
-      cacheControl: 'private, max-age=0, no-store',
-      metadata: { owner: uid },
-    },
-  })
-
-  const [url] = await file.getSignedUrl({
-    version: 'v4',
-    action: 'read',
-    expires: Date.now() + SIGNED_URL_TTL_MS,
-  })
-
-  return { path, url }
+      resumable: false,
+      metadata: {
+        contentType: 'application/pdf',
+        cacheControl: 'private, max-age=0, no-store',
+        metadata: { owner: uid },
+      },
+    })
+  } catch {
+    // Archiving is optional — swallow so the download never fails.
+  }
 }

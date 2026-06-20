@@ -3,7 +3,7 @@
  *
  * Flow: verify the Firebase ID token → fail soft (503) if Admin is unconfigured
  * → validate the derived report payload → render a PDF with @react-pdf/renderer
- * → upload privately to `reports/{uid}/` → return a short-lived signed URL.
+ * → best-effort archive a copy under `reports/{uid}/` → return the PDF bytes.
  *
  * Identity is taken ONLY from the verified token (`user.uid`); a uid in the body
  * is never trusted. The payload carries derived results only (no chats, no raw
@@ -13,8 +13,8 @@
 import { z } from 'zod'
 import { getAuthedUser } from '@/lib/firebase/admin'
 import { isFirebaseAdminConfigured } from '@/lib/env'
-import { uploadReport } from '@/lib/reports/report-storage'
-import { fail, ok } from '@/lib/utils/api'
+import { archiveReport } from '@/lib/reports/report-storage'
+import { fail } from '@/lib/utils/api'
 import type { ReportData } from '@/lib/reports/pdf-document'
 
 // PDF rendering needs Node APIs (streams/buffers) — not the Edge runtime.
@@ -105,9 +105,18 @@ export async function POST(request: Request) {
     const { reportDocument } = await import('@/lib/reports/pdf-document')
     const pdf = await renderToBuffer(reportDocument(data))
 
-    // 5. Upload privately under the caller's own prefix, then sign a read URL.
-    const { url } = await uploadReport(user.uid, Buffer.from(pdf))
-    return ok({ url })
+    // 5. Best-effort archive under the caller's own prefix (never throws), then
+    //    return the PDF bytes directly so the client can download them. We do
+    //    NOT sign a URL — the App Hosting runtime SA can't sign blobs.
+    await archiveReport(user.uid, Buffer.from(pdf))
+    return new Response(Buffer.from(pdf), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': 'attachment; filename="kim-bolam-report.pdf"',
+        'Cache-Control': 'no-store',
+      },
+    })
   } catch {
     return fail('report_generation_failed', 500)
   }

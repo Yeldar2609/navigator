@@ -6,9 +6,9 @@
  * Assembles a DERIVED report payload (scores, route, clusters, qualities,
  * strengths/growth, recommendations, plan summary) from the local result +
  * profile + the methodology catalog — never chats or raw answers — then POSTs it
- * to /api/report with a fresh Firebase ID token. On success it opens the signed
- * URL; if Admin storage isn't configured the route returns 503 and we show a
- * neutral "being set up" message.
+ * to /api/report with a fresh Firebase ID token. On success it downloads the
+ * returned PDF bytes as a blob; if Admin storage isn't configured the route
+ * returns 503 and we show a neutral "being set up" message.
  */
 import * as React from 'react'
 import { Download } from 'lucide-react'
@@ -210,13 +210,15 @@ export function DownloadReportButton({
         return
       }
 
-      const json = (await res.json()) as { ok?: boolean; data?: { url?: string } }
-      const url = json?.data?.url
-      if (!url) {
-        setStatus('error')
-        return
-      }
-      window.open(url, '_blank', 'noopener,noreferrer')
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'kim-bolam-report.pdf'
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
       setStatus('idle')
     } catch {
       setStatus('error')
