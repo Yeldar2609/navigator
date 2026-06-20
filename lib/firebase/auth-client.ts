@@ -5,6 +5,7 @@ import {
   GoogleAuthProvider,
   createUserWithEmailAndPassword,
   onAuthStateChanged,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut as firebaseSignOut,
@@ -64,6 +65,22 @@ export async function googleSignIn(): Promise<AuthOutcome> {
     const provider = new GoogleAuthProvider()
     const cred = await signInWithPopup(auth, provider)
     return { ok: true, uid: cred.user.uid }
+  } catch (e) {
+    return { ok: false, error: mapError((e as { code?: string }).code) }
+  }
+}
+
+/**
+ * Send a password-reset email. Firebase resolves with void on success. Errors are
+ * mapped to the app's generic buckets; callers should still show a neutral message
+ * to avoid leaking whether the account exists.
+ */
+export async function sendPasswordReset(email: string): Promise<AuthOutcome> {
+  const auth = getFirebaseAuth()
+  if (!auth) return { ok: false, error: 'not_configured' }
+  try {
+    await sendPasswordResetEmail(auth, email)
+    return { ok: true }
   } catch (e) {
     return { ok: false, error: mapError((e as { code?: string }).code) }
   }

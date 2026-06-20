@@ -120,7 +120,16 @@ export function AuthForm({
             required
           />
         </div>
-      ) : null}
+      ) : (
+        <div className="text-right">
+          <Link
+            href={`/${locale}/auth/reset`}
+            className="text-sm font-medium text-primary hover:underline"
+          >
+            {dict.auth.signIn.forgotPassword}
+          </Link>
+        </div>
+      )}
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
 

@@ -93,6 +93,15 @@ const en = {
       switchPrompt: 'New here?',
       switchCta: 'Create an account',
       continueWithGoogle: 'Continue with Google',
+      forgotPassword: 'Forgot password?',
+    },
+    reset: {
+      title: 'Reset your password',
+      subtitle: 'Enter your email and we’ll send you a link to set a new password.',
+      emailLabel: 'Email',
+      submit: 'Send reset link',
+      sent: 'If an account exists for this email, a reset link has been sent.',
+      backToSignIn: 'Back to sign in',
     },
     signUp: {
       title: 'Start your path',

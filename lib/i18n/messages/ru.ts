@@ -91,6 +91,15 @@ const ru: Messages = {
       switchPrompt: 'Впервые здесь?',
       switchCta: 'Создать аккаунт',
       continueWithGoogle: 'Продолжить с Google',
+      forgotPassword: 'Забыли пароль?',
+    },
+    reset: {
+      title: 'Сброс пароля',
+      subtitle: 'Введи свою почту, и мы пришлём ссылку для смены пароля.',
+      emailLabel: 'Эл. почта',
+      submit: 'Отправить ссылку',
+      sent: 'Если аккаунт с такой почтой существует, мы отправили ссылку для сброса пароля.',
+      backToSignIn: 'Вернуться ко входу',
     },
     signUp: {
       title: 'Начни свой путь',

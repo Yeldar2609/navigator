@@ -3,6 +3,7 @@ import { demoStore } from '@/lib/demo/store'
 import {
   emailSignInOrUp,
   googleSignIn,
+  sendPasswordReset,
   signOutFirebase,
 } from '@/lib/firebase/auth-client'
 
@@ -39,6 +40,18 @@ export async function signInWithGoogle(): Promise<AuthResult> {
     return { ok: true }
   }
   return googleSignIn()
+}
+
+/**
+ * Request a password-reset email. In demo mode this is a no-op that reports success
+ * (preview has no real accounts). With Firebase configured, a reset link is sent.
+ * Callers should show a neutral confirmation regardless, to avoid account enumeration.
+ */
+export async function requestPasswordReset(email: string): Promise<AuthResult> {
+  if (isDemoMode()) {
+    return { ok: true }
+  }
+  return sendPasswordReset(email)
 }
 
 export function getDemoUser() {
