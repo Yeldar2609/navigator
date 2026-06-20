@@ -57,9 +57,24 @@ const en = {
         time: { title: '12 min', label: 'A calm pace, no timer' },
         privacy: { title: 'Private', label: 'Only you see your answers' },
       },
-      visual: {
-        cardTitle: 'Your profile is ready',
-        cardSubtitle: 'Strengths and directions',
+      planCard: {
+        label: 'Your plan',
+        updated: 'Updated today',
+        directionLabel: 'Direction:',
+        direction: 'engineering & data',
+        strengths: 'Strengths: logic, analysis, attention to detail.',
+        progressLabel: 'Plan progress',
+        progressPct: '62%',
+        chips: ['Maths', 'Programming', 'Physics', 'Projects'],
+        steps: [
+          { title: 'Take the aptitude test', status: 'Done' },
+          { title: 'Explore 3 professions', status: 'Now' },
+          { title: 'Choose UNT subjects', status: 'Next' },
+        ],
+        matchLabel: 'Match',
+        matchValue: '92%',
+        stepsDoneLabel: 'Steps done',
+        stepsDoneValue: '5 of 8',
       },
     },
     features: {

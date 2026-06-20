@@ -55,9 +55,24 @@ const ru: Messages = {
         time: { title: '12 мин', label: 'Спокойный темп, без таймера' },
         privacy: { title: 'Приватно', label: 'Твои ответы видишь только ты' },
       },
-      visual: {
-        cardTitle: 'Твой профиль готов',
-        cardSubtitle: 'Сильные стороны и направления',
+      planCard: {
+        label: 'Твой план',
+        updated: 'Обновлено сегодня',
+        directionLabel: 'Направление:',
+        direction: 'инженерия и данные',
+        strengths: 'Сильные стороны: логика, аналитика, внимание к деталям.',
+        progressLabel: 'Прогресс плана',
+        progressPct: '62%',
+        chips: ['Математика', 'Программирование', 'Физика', 'Проекты'],
+        steps: [
+          { title: 'Пройти тест способностей', status: 'Готово' },
+          { title: 'Изучить 3 профессии', status: 'Сейчас' },
+          { title: 'Выбрать предметы ЕНТ', status: 'Далее' },
+        ],
+        matchLabel: 'Совпадение',
+        matchValue: '92%',
+        stepsDoneLabel: 'Шагов выполнено',
+        stepsDoneValue: '5 из 8',
       },
     },
     features: {

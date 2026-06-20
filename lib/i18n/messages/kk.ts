@@ -57,9 +57,24 @@ const kk: Messages = {
         time: { title: '12 мин', label: 'Байсалды қарқын, таймерсіз' },
         privacy: { title: 'Құпия', label: 'Жауаптарыңды тек өзің көресің' },
       },
-      visual: {
-        cardTitle: 'Профиліңіз дайын',
-        cardSubtitle: 'Күшті жақтар мен бағыттар',
+      planCard: {
+        label: 'Сенің жоспарың',
+        updated: 'Бүгін жаңартылды',
+        directionLabel: 'Бағыт:',
+        direction: 'инженерия және деректер',
+        strengths: 'Күшті жақтары: логика, талдау, ұқыптылық.',
+        progressLabel: 'Жоспар барысы',
+        progressPct: '62%',
+        chips: ['Математика', 'Бағдарламалау', 'Физика', 'Жобалар'],
+        steps: [
+          { title: 'Қабілет тестін тапсыру', status: 'Дайын' },
+          { title: '3 мамандықты зерттеу', status: 'Қазір' },
+          { title: 'ҰБТ пәндерін таңдау', status: 'Келесі' },
+        ],
+        matchLabel: 'Сәйкестік',
+        matchValue: '92%',
+        stepsDoneLabel: 'Қадам орындалды',
+        stepsDoneValue: '8-ден 5',
       },
     },
     features: {
