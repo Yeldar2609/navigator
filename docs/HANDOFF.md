@@ -47,15 +47,39 @@ npm run dev                                  # http://localhost:3000  (default l
    need additional QA.
 
 ## Bootstrap the first admin (custom claim)
-Admin authorization is a Firebase custom claim `admin: true`, checked server-side. Run once with the
-Admin SDK under ADC:
-```js
-const { getAuth } = require('firebase-admin/auth')
-await getAuth().setCustomUserClaims('<uid>', { admin: true })
+Admin authorization is a Firebase **custom claim `admin: true`**, verified server-side by
+`requireAdmin()` (`lib/admin/access.ts`) on **every** `/api/admin/**` route. There is no first-admin
+chicken-and-egg in the app — the very first admin is bootstrapped out-of-band by an operator with
+Application Default Credentials (ADC), using `scripts/set-admin.mjs`.
+
+**1. Find the user's uid.** Firebase console → **Authentication → Users** → copy the value in the
+**User UID** column for the person who should become an admin (have them sign up / sign in first).
+
+**2. Get credentials (ADC).** Either authenticate your gcloud user:
+```bash
+gcloud auth application-default login
 ```
-The user must re-login to refresh their token. Admins operate only through authorized server routes;
-they never receive client access to student chats. (Note: the admin dashboard currently reads
-Supabase — a post-launch cutover; see `POST_LAUNCH_BACKLOG.md`.)
+or point `GOOGLE_APPLICATION_CREDENTIALS` at a service-account key with the *Firebase Authentication
+Admin* role. (The org disables downloadable keys in prod, so ADC is the normal path.)
+
+**3. Run the script** (project id is read from `GOOGLE_CLOUD_PROJECT` / `FIREBASE_PROJECT_ID` /
+`NEXT_PUBLIC_FIREBASE_PROJECT_ID`, or from ADC):
+```bash
+node scripts/set-admin.mjs <uid>            # grant  admin:true
+node scripts/set-admin.mjs <uid> --revoke   # remove the claim
+```
+
+**4. The user must sign OUT and sign back IN** (or force-refresh their ID token) for the new claim to
+take effect — custom claims are only re-read on token refresh.
+
+Notes:
+- The admin dashboard now runs on **Firebase** (no Supabase). `/api/admin/students` lists a derived,
+  privacy-safe roster; `/export` emits CSV; `/[uid]/report` renders the student PDF; `/[uid]/delete`
+  soft-archives a student's history and writes an `auditLogs` record. None of these ever read or
+  return chat history or raw assessment answers.
+- Authorization is always the token's claim — never a uid/role from the request body or query.
+- When Admin credentials are absent the routes **fail soft** (403 for non-admins, 503 when the Admin
+  SDK is unconfigured), so the dashboard degrades cleanly instead of erroring.
 
 ## Test account note
 Auth is verified live end-to-end: a real user can sign up (Email/Password or Google) and onboarding

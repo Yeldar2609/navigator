@@ -24,6 +24,7 @@ const config: Config = {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
           soft: 'hsl(var(--primary-soft))',
+          strong: 'hsl(var(--primary-strong))',
         },
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',
@@ -36,6 +37,8 @@ const config: Config = {
         accent: {
           DEFAULT: 'hsl(var(--accent))',
           foreground: 'hsl(var(--accent-foreground))',
+          soft: 'hsl(var(--accent-soft))',
+          strong: 'hsl(var(--accent-strong))',
         },
         success: {
           DEFAULT: 'hsl(var(--success))',
@@ -67,6 +70,7 @@ const config: Config = {
       boxShadow: {
         soft: '0 1px 2px rgba(16, 24, 40, 0.04), 0 8px 24px -12px rgba(16, 24, 40, 0.12)',
         lift: '0 12px 40px -16px rgba(16, 24, 40, 0.22)',
+        glow: '0 22px 60px -22px rgba(27, 58, 107, 0.45), 0 8px 22px -12px rgba(20, 26, 36, 0.3)',
       },
       keyframes: {
         'fade-in': { from: { opacity: '0' }, to: { opacity: '1' } },

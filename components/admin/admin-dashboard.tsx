@@ -22,10 +22,24 @@ import { Select } from '@/components/ui/select'
 import { RouteBadge } from '@/components/ui/route-badge'
 import { cn } from '@/lib/utils/cn'
 import { interpolate } from '@/lib/utils/format'
+import { isDemoMode } from '@/lib/data/mode'
+import { LiveAdminDashboard } from '@/components/admin/live-admin-dashboard'
 
 const AWARENESS_LEVELS = ['low', 'medium', 'high'] as const
 
+/**
+ * Entry point. In DEMO mode (no real backend) we render the sample-data preview
+ * below. In Firebase mode we render the live, claim-gated dashboard which fetches
+ * the real roster with the admin's ID token (authorization enforced server-side).
+ */
 export function AdminDashboard({ locale, dict }: { locale: Locale; dict: Messages }) {
+  if (!isDemoMode()) {
+    return <LiveAdminDashboard locale={locale} dict={dict} />
+  }
+  return <DemoAdminDashboard locale={locale} dict={dict} />
+}
+
+function DemoAdminDashboard({ locale, dict }: { locale: Locale; dict: Messages }) {
   const t = dict.d4.admin
   const [grade, setGrade] = React.useState('all')
   const [route, setRoute] = React.useState('all')

@@ -4,7 +4,7 @@
 
 const en = {
   meta: {
-    appName: 'Navigator',
+    appName: 'Kim Bolam',
     tagline: 'Find your direction, one step at a time.',
   },
   common: {
@@ -42,47 +42,114 @@ const en = {
   },
   landing: {
     hero: {
-      eyebrow: 'For students in Kazakhstan',
-      title: 'Discover your direction.',
-      titleAccent: 'Build the plan to get there.',
+      eyebrow: 'For students in grades 8–11',
+      titleLead: 'Understand yourself, ',
+      titleRed: 'choose a direction',
+      titleMid: ', and build a ',
+      titleBlue: 'clear action plan',
+      titleEnd: '.',
       subtitle:
-        'Navigator helps you understand yourself, explore careers that fit, and follow a simple plan — at your own pace.',
-      ctaPrimary: 'Start your path',
-      ctaSecondary: 'See how it works',
+        'Kim Bolam is a calm guide for choosing a career. No pressure and no complicated terms: you explore your strengths and take your first confident step.',
+      ctaPrimary: 'Take the test',
+      underCta: 'Free · about 12 minutes',
+      chips: {
+        languages: { title: '3 languages', label: 'Қазақша · Русский · English' },
+        time: { title: '12 min', label: 'A calm pace, no timer' },
+        privacy: { title: 'Private', label: 'Only you see your answers' },
+      },
+      visual: {
+        cardTitle: 'Your profile is ready',
+        cardSubtitle: 'Strengths and directions',
+      },
     },
-    values: {
-      title: 'Three steps, zero pressure',
+    features: {
+      tag: 'What Kim Bolam does',
+      title: 'Helps you choose a future without anxiety',
+      subtitle:
+        'Not a “right answer” for you, but a clear picture: who you are, what fits you, and where to start.',
       understand: {
-        title: 'Understand yourself',
-        body: 'Answer simple questions to see your interests, strengths, and values clearly.',
+        title: 'Get to know yourself',
+        body: 'A calm test reveals your strengths, interests, and way of thinking — without grades or labels.',
       },
-      explore: {
-        title: 'Explore careers',
-        body: 'Discover professional routes and real careers that match who you are.',
+      directions: {
+        title: 'See your directions',
+        body: 'You get matching professions and fields, with a clear explanation of why they suit you.',
       },
-      build: {
-        title: 'Build your plan',
-        body: 'Get a month-by-month plan you can actually follow — and adjust anytime.',
+      plan: {
+        title: 'Build a plan',
+        body: 'Concrete steps: which subjects to strengthen, what to learn, and how to prepare — in order, without chaos.',
       },
-    },
-    reassurance: {
-      title: 'You do not need to have everything figured out today.',
-      body: 'Most students do not. Navigator is built for exactly this moment — when the future feels big and unclear. Start with one step.',
-      chip: 'Start with one step',
+      progress: {
+        title: 'Move forward',
+        body: 'You track your progress and see yourself grow. The plan stays with you and changes as you do.',
+      },
     },
     how: {
-      title: 'How it works',
+      tag: 'How it works',
+      title: 'Three simple steps',
+      subtitle: 'From the first question to an action plan — calmly and in order.',
       step1: {
-        title: 'Answer simple questions',
-        body: 'A short, friendly assessment — no right or wrong answers.',
+        label: 'Step one',
+        title: 'Take the test',
+        body: 'Answer calm questions about yourself. No right or wrong answers — just honesty with yourself.',
       },
-      step2: { title: 'See your profile', body: 'A clear picture of your strengths and directions.' },
-      step3: { title: 'Get a plan', body: 'Concrete steps for the next 1 to 6 months.' },
-      step4: { title: 'Check in and improve', body: 'Track how you feel and keep your momentum.' },
+      step2: {
+        label: 'Step two',
+        title: 'Results and plan',
+        body: 'You get a clear breakdown of your strengths, matching directions, and a ready list of first steps.',
+      },
+      step3: {
+        label: 'Step three',
+        title: 'Follow the plan',
+        body: 'Move through the steps at your own pace, check off what is done, and see yourself getting closer to the goal.',
+      },
+    },
+    privacy: {
+      title: 'Your answers are yours alone',
+      body: 'Kim Bolam is built as a safe space. Here you can be honest with yourself without worrying that someone will judge you or see too much.',
+      item1: {
+        title: 'Only you see your results',
+        body: 'Nothing is published or sent to your classmates.',
+      },
+      item2: {
+        title: 'No grades or comparisons',
+        body: 'We do not give scores or compare you with others.',
+      },
+      item3: {
+        title: 'Your data is protected',
+        body: 'Your information is stored securely, and you stay in control of it.',
+      },
+    },
+    languages: {
+      tag: 'Supported languages',
+      title: 'In your language',
+      subtitle:
+        'Learn and choose your future the way that suits you — switch the language at any time.',
+      ru: { title: 'Русский', body: 'Полный интерфейс, тест и план на русском языке.' },
+      kk: { title: 'Қазақша', body: 'Толық қазақ тілінде — тест те, нәтиже де, жоспар да.' },
+      en: { title: 'English', body: 'The full experience in English for those who prefer it.' },
+    },
+    finalCta: {
+      title: 'Take the first step toward your future',
+      body: 'Take the calm test, learn your strengths, and get a clear action plan today.',
+      cta: 'Take the test',
+      note: 'Free to start · about 12 minutes · no pressure',
     },
     footer: {
-      rights: 'Navigator — a self-determination companion for students.',
-      methodology: 'Based on the “Navigator of Self-Determination” methodology.',
+      description:
+        'A calm guide for choosing a future, for students in grades 8–11 in Kazakhstan.',
+      productTitle: 'Product',
+      linkFeatures: 'Features',
+      linkHow: 'How it works',
+      linkStart: 'Take the test',
+      supportTitle: 'Support',
+      linkFaq: 'FAQ',
+      linkParents: 'For parents',
+      linkContact: 'Contact',
+      legalTitle: 'Legal',
+      linkPrivacy: 'Privacy',
+      linkTerms: 'Terms',
+      rights: '© 2026 Kim Bolam. All rights reserved.',
     },
   },
   auth: {
@@ -93,6 +160,15 @@ const en = {
       switchPrompt: 'New here?',
       switchCta: 'Create an account',
       continueWithGoogle: 'Continue with Google',
+      forgotPassword: 'Forgot password?',
+    },
+    reset: {
+      title: 'Reset your password',
+      subtitle: 'Enter your email and we’ll send you a link to set a new password.',
+      emailLabel: 'Email',
+      submit: 'Send reset link',
+      sent: 'If an account exists for this email, a reset link has been sent.',
+      backToSignIn: 'Back to sign in',
     },
     signUp: {
       title: 'Start your path',
@@ -121,7 +197,7 @@ const en = {
   },
   onboarding: {
     title: 'Let’s get to know you',
-    subtitle: 'A few quick details so Navigator can speak your language — literally.',
+    subtitle: 'A few quick details so Kim Bolam can speak your language — literally.',
     fields: {
       displayName: 'What should we call you?',
       displayNamePlaceholder: 'Your name or nickname',
@@ -186,7 +262,7 @@ const en = {
     generate: 'Generate my plan',
     empty: {
       title: 'No plan yet',
-      body: 'Once you have results, Navigator builds a step-by-step plan you can follow and adjust.',
+      body: 'Once you have results, Kim Bolam builds a step-by-step plan you can follow and adjust.',
       cta: 'See your results first',
     },
     item: { todo: 'To do', in_progress: 'In progress', done: 'Done', skipped: 'Skipped' },
@@ -198,7 +274,7 @@ const en = {
     send: 'Send',
     shellNote:
       'The AI counselor is coming soon. It will use your profile to give grounded, encouraging guidance.',
-    disclaimer: 'Navigator’s counselor offers guidance, not professional or clinical advice.',
+    disclaimer: 'Kim Bolam’s counselor offers guidance, not professional or clinical advice.',
   },
   checkIns: {
     title: 'Check in',
@@ -214,7 +290,7 @@ const en = {
     notePlaceholder: 'Optional — a sentence about how it’s going.',
     empty: {
       title: 'No check-ins yet',
-      body: 'Your first check-in helps Navigator understand how to support you.',
+      body: 'Your first check-in helps Kim Bolam understand how to support you.',
     },
   },
   admin: {
@@ -280,12 +356,12 @@ const en = {
       stepConfidence: 'Confidence & support',
       subjectsTitle: 'Which subjects do you enjoy?',
       subjectsHint: 'Pick as many as you like.',
-      goalsTitle: 'What do you want from Navigator?',
+      goalsTitle: 'What do you want from Kim Bolam?',
       goalsHint: 'Choose what matters to you right now.',
       confidenceTitle: 'How sure do you feel about your direction?',
       confidenceLow: 'Not sure yet',
       confidenceHigh: 'Very sure',
-      supportTitle: 'How would you like Navigator to help?',
+      supportTitle: 'How would you like Kim Bolam to help?',
       freeTextTitle: 'What do you want your future to feel like?',
       freeTextPlaceholder: 'A few words in your own language…',
       freeTextOptional: 'Optional — there are no wrong answers.',
@@ -618,8 +694,95 @@ const en = {
       viewReport: 'Print report',
       reportTitle: 'Student report',
       reportDisclaimer:
-        'Generated by Navigator from the student’s assessment. Readiness reflects self-awareness, not ability. Career relevance is curated demo data, not official labor-market figures.',
+        'Generated by Kim Bolam from the student’s assessment. Readiness reflects self-awareness, not ability. Career relevance is curated demo data, not official labor-market figures.',
+      // Live (Firebase) admin dashboard
+      liveTitle: 'Admin dashboard',
+      liveSubtitle: 'Student progress across your school.',
+      search: 'Search by name',
+      searchPlaceholder: 'Search students…',
+      loading: 'Loading students…',
+      loadError: 'We couldn’t load students. Please try again.',
+      retry: 'Retry',
+      accessRequiredTitle: 'Admin access required',
+      accessRequiredBody:
+        'You don’t have permission to view this dashboard. Ask an administrator to grant you admin access, then sign out and back in.',
+      unavailableTitle: 'Admin dashboard unavailable',
+      unavailableBody:
+        'The admin backend isn’t configured in this environment yet. Please check back once it’s set up.',
+      colName: 'Name',
+      colGrade: 'Grade',
+      colRoute: 'Direction',
+      colScore: 'Readiness',
+      colClarity: 'Clarity',
+      colPlan: 'Plan',
+      colCheckIn: 'Last check-in',
+      colActions: 'Actions',
+      archivedTag: 'Archived',
+      exportCsv: 'Export CSV',
+      exportPdf: 'PDF',
+      exportingPdf: 'Preparing…',
+      pdfError: 'We couldn’t generate that report.',
+      deleteHistory: 'Delete history',
+      deleteDialogTitle: 'Delete this student’s history?',
+      deleteDialogBody:
+        'This archives the student’s record (route, plan, check-ins) and logs the action for audit. It can be reversed by an administrator. To confirm, type the word below.',
+      deleteConfirmWord: 'DELETE',
+      deleteConfirmPrompt: 'Type {word} to confirm',
+      deleteConfirmButton: 'Delete history',
+      deleteCancel: 'Cancel',
+      deleteWorking: 'Archiving…',
+      deleteError: 'We couldn’t complete that action.',
+      deleteSuccess: 'Student history archived.',
+      // CSV column headers (export route)
+      csvName: 'Name',
+      csvGrade: 'Grade',
+      csvRoute: 'Direction',
+      csvSecondaryRoute: 'Secondary direction',
+      csvScore: 'Readiness (0-100)',
+      csvClarity: 'Clarity',
+      csvPlanProgress: 'Plan progress',
+      csvLastCheckIn: 'Last check-in',
+      csvRecommendedCareers: 'Recommended careers',
     },
+  },
+  reports: {
+    appName: 'Kim Bolam',
+    downloadPdf: 'Download PDF',
+    generating: 'Preparing your report…',
+    error: 'We couldn’t prepare your report. Please try again.',
+    unavailable: 'PDF reports are being set up. Please check back soon.',
+    defaultStudentName: 'Student',
+    reportTitle: 'Career direction report',
+    preparedFor: 'Prepared for',
+    generatedOn: 'Generated on',
+    readinessScore: 'Career readiness',
+    internalScoreDetail: 'Internal awareness index: {raw}/60',
+    yourDirection: 'Your direction',
+    yourClusters: 'Where you lean',
+    yourQualities: 'Your standout qualities',
+    motivationWorkStyle: 'Motivation & work style',
+    yourStrengths: 'Your strengths',
+    areasToGrow: 'Areas to grow',
+    recommendedCareers: 'Recommended careers',
+    recommendedMajors: 'Recommended majors',
+    subjectsToFocus: 'Subjects to focus on',
+    projectIdeas: 'Project ideas',
+    universitiesToExplore: 'Universities to explore',
+    yourPlan: 'Your plan',
+    methodology: 'Methodology & scoring',
+    dataSources: 'Data sources',
+    disclaimerHeading: 'Important',
+    none: 'Not enough data yet',
+    motivationTemplate:
+      'You are motivated by the {cluster} style and tend to do your best work along the {route} direction. Use this as a starting map, not a final label.',
+    projectTemplate: 'Try a small project to practice {skill}.',
+    planSummaryTemplate:
+      'Spend the coming weeks exploring the {route} direction with small, steady steps — one career to research, one subject to strengthen, and one skill to practice.',
+    methodologyTemplate: 'Methodology {methodology} · Scoring {scoring} · Template {template}',
+    dataSourceNote:
+      'Career, major and university suggestions come from Kim Bolam’s curated catalog — starting points to research, not official admissions or labor-market data.',
+    disclaimer:
+      'This report reflects self-awareness, not ability. Career relevance is curated demo data, not official labor-market figures. Verify admissions, salaries and program details with official sources and trusted adults.',
   },
 }
 

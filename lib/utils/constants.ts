@@ -1,6 +1,6 @@
 import { locales } from '@/lib/i18n/config'
 
-export const APP_NAME = 'Navigator'
+export const APP_NAME = 'Kim Bolam'
 
 export const PLAN_HORIZONS = [1, 2, 3, 6] as const
 export type PlanHorizon = (typeof PLAN_HORIZONS)[number]
