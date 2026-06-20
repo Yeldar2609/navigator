@@ -169,13 +169,15 @@ export function LiveAdminDashboard({ locale, dict }: { locale: Locale; dict: Mes
           setActionError(t.pdfError)
           return
         }
-        const json = (await res.json()) as { data?: { url?: string } }
-        const url = json.data?.url
-        if (!url) {
-          setActionError(t.pdfError)
-          return
-        }
-        window.open(url, '_blank', 'noopener,noreferrer')
+        const blob = await res.blob()
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `student-${row.uid}.pdf`
+        document.body.appendChild(a)
+        a.click()
+        a.remove()
+        URL.revokeObjectURL(url)
       } catch {
         setActionError(t.pdfError)
       } finally {

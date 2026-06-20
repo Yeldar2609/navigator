@@ -9,14 +9,51 @@
  * server before rendering.
  */
 import * as React from 'react'
+import fs from 'node:fs'
+import path from 'node:path'
 import {
   Document,
   Page,
   Text,
   View,
   StyleSheet,
+  Font,
   type DocumentProps,
 } from '@react-pdf/renderer'
+
+// Unicode font so Cyrillic (Russian/Kazakh) renders — built-in Helvetica has no
+// Cyrillic glyphs. Prefer the font bundled into the deployment; fall back to a
+// CDN copy if output-file tracing did not include it.
+function fontSrc(file: string, url: string): string {
+  try {
+    const p = path.join(process.cwd(), 'lib', 'reports', 'fonts', file)
+    if (fs.existsSync(p)) return p
+  } catch {
+    /* fall through to the CDN url */
+  }
+  return url
+}
+
+Font.register({
+  family: 'DejaVu',
+  fonts: [
+    {
+      src: fontSrc(
+        'DejaVuSans.ttf',
+        'https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37.3/ttf/DejaVuSans.ttf',
+      ),
+    },
+    {
+      src: fontSrc(
+        'DejaVuSans-Bold.ttf',
+        'https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37.3/ttf/DejaVuSans-Bold.ttf',
+      ),
+      fontWeight: 'bold',
+    },
+  ],
+})
+// Keep words intact (avoid per-character breaking of long tokens).
+Font.registerHyphenationCallback((word) => [word])
 
 /**
  * The full, self-contained report payload. The client assembles this from the
@@ -121,7 +158,7 @@ const styles = StyleSheet.create({
     fontSize: 10.5,
     lineHeight: 1.5,
     color: INK,
-    fontFamily: 'Helvetica',
+    fontFamily: 'DejaVu',
   },
   // Header band
   header: {
@@ -141,11 +178,11 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     marginRight: 7,
   },
-  brandName: { fontSize: 15, fontFamily: 'Helvetica-Bold', color: BLUE },
+  brandName: { fontSize: 15, fontFamily: 'DejaVu', fontWeight: 'bold', color: BLUE },
   reportTitle: { fontSize: 9, color: MUTED, marginTop: 3 },
   headerRight: { textAlign: 'right' },
   metaLabel: { fontSize: 8, color: MUTED, textTransform: 'uppercase', letterSpacing: 0.5 },
-  metaValue: { fontSize: 11, fontFamily: 'Helvetica-Bold', color: INK },
+  metaValue: { fontSize: 11, fontFamily: 'DejaVu', fontWeight: 'bold', color: INK },
   metaSub: { fontSize: 8.5, color: MUTED, marginTop: 1 },
 
   // Score hero
@@ -165,11 +202,11 @@ const styles = StyleSheet.create({
     paddingRight: 14,
     marginRight: 14,
   },
-  scoreNumber: { fontSize: 32, fontFamily: 'Helvetica-Bold', color: BLUE },
+  scoreNumber: { fontSize: 32, fontFamily: 'DejaVu', fontWeight: 'bold', color: BLUE },
   scoreOutOf: { fontSize: 9, color: MUTED },
   scoreCaption: { fontSize: 8, color: MUTED, textAlign: 'center', marginTop: 4 },
   heroBody: { flex: 1 },
-  heroRoute: { fontSize: 13, fontFamily: 'Helvetica-Bold', color: INK },
+  heroRoute: { fontSize: 13, fontFamily: 'DejaVu', fontWeight: 'bold', color: INK },
   heroRouteDesc: { fontSize: 9.5, color: MUTED, marginTop: 2 },
   detailLine: { fontSize: 8.5, color: MUTED, marginTop: 6 },
 
@@ -177,7 +214,8 @@ const styles = StyleSheet.create({
   section: { marginBottom: 13 },
   sectionTitle: {
     fontSize: 10.5,
-    fontFamily: 'Helvetica-Bold',
+    fontFamily: 'DejaVu',
+    fontWeight: 'bold',
     color: BLUE,
     textTransform: 'uppercase',
     letterSpacing: 0.6,
@@ -202,7 +240,7 @@ const styles = StyleSheet.create({
   },
   // Bullet list
   bulletItem: { flexDirection: 'row', marginBottom: 2.5 },
-  bulletDot: { color: RED, marginRight: 5, fontFamily: 'Helvetica-Bold' },
+  bulletDot: { color: RED, marginRight: 5, fontFamily: 'DejaVu', fontWeight: 'bold' },
   bulletText: { fontSize: 10, color: INK, flex: 1 },
 
   // Footer / disclaimer
@@ -212,7 +250,7 @@ const styles = StyleSheet.create({
     borderTopColor: HAIRLINE,
     paddingTop: 8,
   },
-  footnoteLabel: { fontSize: 8, fontFamily: 'Helvetica-Bold', color: MUTED, marginTop: 5 },
+  footnoteLabel: { fontSize: 8, fontFamily: 'DejaVu', fontWeight: 'bold', color: MUTED, marginTop: 5 },
   footnote: { fontSize: 8, color: MUTED },
   pageNumber: {
     position: 'absolute',
