@@ -4,28 +4,34 @@
 
 @layer base {
   :root {
-    --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue',
-      Arial, 'Noto Sans', 'Noto Sans Kazakh', sans-serif;
+    /* Manrope (loaded via next/font) with a robust system fallback, incl. Kazakh glyphs. */
+    --font-sans: var(--font-manrope), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+      'Helvetica Neue', Arial, 'Noto Sans', 'Noto Sans Kazakh', sans-serif;
 
-    /* Calm, warm, premium light theme. HSL channels (used as hsl(var(--x))). */
-    --background: 210 40% 99%;
-    --foreground: 224 32% 14%;
+    /* Calm red + blue + white theme (Kim Bolam). HSL channels (used as hsl(var(--x))). */
+    --background: 0 0% 100%;
+    --foreground: 218 29% 11%;
 
     --card: 0 0% 100%;
-    --card-foreground: 224 32% 14%;
+    --card-foreground: 218 29% 11%;
 
-    --primary: 245 58% 58%;
+    /* Primary = brand red (the single CTA colour). */
+    --primary: 355 77% 50%;
     --primary-foreground: 0 0% 100%;
-    --primary-soft: 245 84% 96%;
+    --primary-soft: 353 81% 96%;
+    --primary-strong: 352 81% 42%;
 
-    --secondary: 246 30% 96%;
-    --secondary-foreground: 245 30% 28%;
+    --secondary: 220 50% 98%;
+    --secondary-foreground: 217 60% 26%;
 
-    --muted: 220 24% 96%;
-    --muted-foreground: 220 12% 46%;
+    --muted: 220 50% 98%;
+    --muted-foreground: 217 16% 35%;
 
-    --accent: 18 92% 63%;
+    /* Accent = brand blue (used for secondary highlights). */
+    --accent: 216 56% 42%;
     --accent-foreground: 0 0% 100%;
+    --accent-soft: 217 62% 96%;
+    --accent-strong: 217 60% 26%;
 
     --success: 152 52% 42%;
     --success-foreground: 0 0% 100%;
@@ -33,12 +39,12 @@
     --warning: 38 92% 50%;
     --warning-foreground: 30 40% 12%;
 
-    --destructive: 0 72% 56%;
+    --destructive: 355 77% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 222 22% 91%;
-    --input: 222 22% 89%;
-    --ring: 245 58% 58%;
+    --border: 218 28% 92%;
+    --input: 218 28% 90%;
+    --ring: 355 77% 50%;
 
     --radius: 1rem;
   }
@@ -65,12 +71,12 @@
 }
 
 @layer components {
-  /* Soft layered gradient used behind the hero. */
+  /* Soft layered red+blue gradient used behind the hero. */
   .bg-hero {
     background:
-      radial-gradient(1200px 620px at 8% -12%, hsl(var(--primary-soft)), transparent 60%),
-      radial-gradient(960px 520px at 100% -6%, hsl(var(--accent) / 0.14), transparent 55%),
-      linear-gradient(180deg, hsl(var(--background)), hsl(var(--background)));
+      radial-gradient(720px 460px at 88% -6%, hsl(var(--accent) / 0.1), transparent 60%),
+      radial-gradient(620px 420px at 6% 8%, hsl(var(--primary) / 0.07), transparent 62%),
+      linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--secondary)) 100%);
   }
 
   .text-gradient {

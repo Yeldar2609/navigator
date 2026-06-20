@@ -1,10 +1,18 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import { notFound } from 'next/navigation'
+import { Manrope } from 'next/font/google'
 import '../globals.css'
 import { isLocale, locales, type Locale } from '@/lib/i18n/config'
 import { getDictionary } from '@/lib/i18n/dictionaries'
 import { AuthProvider } from '@/components/auth/auth-provider'
+
+const manrope = Manrope({
+  subsets: ['latin', 'cyrillic'],
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-manrope',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: { default: 'Kim Bolam', template: '%s · Kim Bolam' },
@@ -27,7 +35,7 @@ export default function LangLayout({
   const locale = params.lang as Locale
   const dict = getDictionary(locale)
   return (
-    <html lang={locale}>
+    <html lang={locale} className={manrope.variable}>
       <body>
         <a
           href="#main-content"

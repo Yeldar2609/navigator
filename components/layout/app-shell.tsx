@@ -28,7 +28,7 @@ export function AppShell({
               <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-primary-foreground">
                 <Compass className="h-4 w-4" />
               </span>
-              <span className="hidden sm:inline">Navigator</span>
+              <span className="hidden sm:inline">Kim Bolam</span>
             </Link>
             <div className="hidden md:block">
               <StudentNav locale={locale} dict={dict} />
