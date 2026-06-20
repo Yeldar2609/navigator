@@ -16,6 +16,7 @@ import { getLatestResult } from './assessment'
 import { getProfile } from './profile'
 import { getPlan, nextPlanItem } from './plan'
 import { getCheckIns } from './check-in'
+import { getIdToken } from '@/lib/firebase/auth-client'
 import type { StoredChatMessage, StoredChatThread } from './types'
 
 export function getChatThread(): StoredChatThread | null {
@@ -95,9 +96,14 @@ async function sendToServer(
   dict: Messages,
 ): Promise<CounselorReply> {
   try {
+    // Attach the Firebase ID token so the route can verify identity (uid comes
+    // only from this token, never from the body).
+    const token = await getIdToken()
+    const headers: Record<string, string> = { 'content-type': 'application/json' }
+    if (token) headers.Authorization = `Bearer ${token}`
     const res = await fetch('/api/chat', {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers,
       body: JSON.stringify({ message, threadId, locale }),
     })
     const json = (await res.json()) as { ok: boolean; data?: ChatResponse }

@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { FieldValue } from 'firebase-admin/firestore'
 import { resolveLocale } from '@/lib/i18n/config'
 import { getDictionary, type Messages } from '@/lib/i18n/dictionaries'
 import type { Block } from '@/lib/methodology/assessment-items'
@@ -19,16 +20,18 @@ import {
   generateCounselorReply,
   type CounselorFactors,
 } from '@/lib/ai/counselor'
-import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
+import { getAdminDb, getAuthedUser } from '@/lib/firebase/admin'
+import type { StoredResult, StoredPlan, StoredCheckIn } from '@/lib/data/types'
 import { isAiCounselorConfigured } from '@/lib/env'
 import { fail, ok, parseBody } from '@/lib/utils/api'
 import { interpolate } from '@/lib/utils/format'
 
 const chatRequestSchema = z.object({
-  threadId: z.string().uuid().optional(),
+  // Firestore doc ids (not UUIDs) — a non-empty string is the caller's own thread id.
+  threadId: z.string().min(1).optional(),
   message: z.string().min(1).max(2000),
   locale: z.string().optional(),
-  resultId: z.string().uuid().optional(),
+  resultId: z.string().optional(),
 })
 
 type ScoreLite = {
@@ -84,106 +87,70 @@ function buildFactors(
 export async function POST(request: Request) {
   // Fail CLOSED: the AI counselor is disabled-safe. When it is not configured
   // (no Dialogflow CX agent) we return 503 BEFORE any other work — this closes
-  // the unauthenticated-public-endpoint hole (the route never touches Supabase
+  // the unauthenticated-public-endpoint hole (the route never touches Firestore
   // or the deterministic template fallback) and matches the disabled chat UI.
-  //
-  // NOTE: When AI is enabled, the configured path below currently authenticates
-  // via Supabase. On this Firebase deployment it must instead verify the
-  // Firebase ID token (getAuthedUser from '@/lib/firebase/admin') before
-  // trusting the caller. That rewiring is required when ENABLE_AI_COUNSELOR=true.
   if (!isAiCounselorConfigured()) {
     return fail('ai_unavailable', 503)
   }
 
+  // AUTH (Firebase): identity comes ONLY from the verified ID token. We NEVER
+  // trust a uid from the body — every read/write below is scoped to this uid.
+  const decoded = await getAuthedUser(request)
+  if (!decoded) return fail('unauthorized', 401)
+  const uid = decoded.uid
+
   const parsed = await parseBody(request, chatRequestSchema)
   if (!parsed.success) return parsed.response
-  const { threadId, message, locale: rawLocale } = parsed.data
+  const { threadId: bodyThreadId, message, locale: rawLocale } = parsed.data
   const locale = resolveLocale(rawLocale ?? 'en')
   const dict = getDictionary(locale)
   const d4 = dict.d4
 
-  const safety = await moderate(message)
-
-  // Demo install (no Supabase): the client runs chat locally; this is a safe echo.
-  if (!isSupabaseConfigured()) {
-    // Scope guardrail (out-of-scope → polite redirect). Crisis/harm is handled by
-    // generateCounselorReply below; only gate scope on otherwise-OK messages.
-    if (safety.category === 'ok') {
-      const scope = checkScope(message, locale)
-      if (!scope.allowed && scope.redirect) {
-        return ok({
-          thread_id: 'local',
-          assistant_message: scope.redirect,
-          suggested_questions: [],
-          suggested_actions: [],
-          referenced_profile_factors: [],
-          ai_meta: { provider: 'guardrail', fallback: true, reason: scope.reason },
-        })
-      }
-    }
-    const snapshot = buildSnapshot({ locale, gradeLevel: null, score: null })
-    const reply = generateCounselorReply({ message, snapshot, factors: EMPTY_FACTORS, d4 })
-    return ok({
-      thread_id: 'local',
-      assistant_message: reply.text,
-      suggested_questions: reply.suggestedQuestions,
-      suggested_actions: reply.suggestedActions,
-      referenced_profile_factors: reply.referencedFactors,
-      safety_notice_optional: reply.safetyNotice,
-      ai_meta: { provider: 'template', fallback: true },
-    })
-  }
+  const db = getAdminDb()
+  if (!db) return fail('chat_unavailable', 503)
 
   try {
-    const supabase = createClient()
-    const { data: auth } = await supabase.auth.getUser()
-    const authId = auth.user?.id
-    if (!authId) return fail('unauthorized', 401)
+    // Resolve the thread id. A non-empty body.threadId is used as the doc id
+    // under THIS uid's chatThreads (ownership is implicit — we only ever write
+    // beneath users/{uid}/...). Otherwise mint a fresh id from Firestore.
+    const userRef = db.collection('users').doc(uid)
+    const threadsCol = userRef.collection('chatThreads')
+    // Only accept a clean doc-id (uuid/nanoid charset) as the thread id; anything
+    // else mints a fresh id. (It is already confined to this uid's subtree, but
+    // this avoids malformed Firestore paths from an odd client value.)
+    const tid =
+      bodyThreadId && /^[A-Za-z0-9_-]{1,128}$/.test(bodyThreadId)
+        ? bodyThreadId
+        : threadsCol.doc().id
+    const threadRef = threadsCol.doc(tid)
+    const messagesCol = threadRef.collection('messages')
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('id, grade_level')
-      .eq('auth_user_id', authId)
-      .maybeSingle()
-    if (!profile) return fail('no_profile', 400)
-
-    // Resolve / create the thread (server-authoritative; client ids untrusted).
-    let tid = threadId
-    if (tid) {
-      const owned = await supabase
-        .from('chat_threads')
-        .select('id')
-        .eq('id', tid)
-        .eq('profile_id', profile.id)
-        .maybeSingle()
-      if (!owned.data) tid = undefined
+    // Best-effort, PRIVATE chat persistence. A storage failure must NEVER break
+    // the reply. Chats live ONLY under users/{uid}/chatThreads/** — admin reads
+    // (assessmentResults/plans/checkIns) never touch this, so they stay private.
+    async function storeMessage(
+      role: 'user' | 'assistant',
+      content: string,
+      aiMeta?: Record<string, unknown>,
+    ): Promise<void> {
+      try {
+        await threadRef.set({ updatedAt: FieldValue.serverTimestamp() }, { merge: true })
+        await messagesCol.add({
+          role,
+          content,
+          createdAt: FieldValue.serverTimestamp(),
+          ...(aiMeta ? { aiMeta } : {}),
+        })
+      } catch {
+        /* persistence is best-effort; never block the reply */
+      }
     }
-    if (!tid) {
-      const ins = await supabase
-        .from('chat_threads')
-        .insert({ profile_id: profile.id })
-        .select('id')
-        .single()
-      if (ins.error) return fail('thread_failed', 500)
-      tid = ins.data.id as string
-    }
 
-    await supabase.from('chat_messages').insert({
-      thread_id: tid,
-      profile_id: profile.id,
-      role: 'user',
-      content: message,
-      moderation_json: { category: safety.category },
-    })
-
-    async function storeAssistant(content: string) {
-      await supabase
-        .from('chat_messages')
-        .insert({ thread_id: tid, profile_id: profile!.id, role: 'assistant', content })
-    }
+    const safety = await moderate(message)
+    await storeMessage('user', message)
 
     if (safety.category === 'crisis') {
-      await storeAssistant(d4.safety.crisis)
+      await storeMessage('assistant', d4.safety.crisis)
       return ok({
         thread_id: tid,
         assistant_message: d4.safety.crisis,
@@ -194,7 +161,7 @@ export async function POST(request: Request) {
       })
     }
     if (safety.category === 'harmful') {
-      await storeAssistant(d4.safety.refuse)
+      await storeMessage('assistant', d4.safety.refuse)
       return ok({
         thread_id: tid,
         assistant_message: d4.safety.refuse,
@@ -207,34 +174,54 @@ export async function POST(request: Request) {
     // Out-of-scope (coding/homework/medical/therapy/sensitive-data) → redirect.
     const scope = checkScope(message, locale)
     if (!scope.allowed && scope.redirect) {
-      await storeAssistant(scope.redirect)
+      const meta = { provider: 'guardrail', fallback: true, reason: scope.reason }
+      await storeMessage('assistant', scope.redirect, meta)
       return ok({
         thread_id: tid,
         assistant_message: scope.redirect,
         suggested_questions: [],
         suggested_actions: [],
         referenced_profile_factors: [],
-        ai_meta: { provider: 'guardrail', fallback: true, reason: scope.reason },
+        ai_meta: meta,
       })
     }
 
-    const { data: resultRow } = await supabase
-      .from('assessment_results')
-      .select(
-        'ipo_pct_100, awareness_level, primary_route, primary_cluster, secondary_cluster, strengths, growth_areas, recommendations',
-      )
-      .eq('profile_id', profile.id)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
+    // READ CONTEXT from Firestore for THIS uid only (mirrors the admin _lib
+    // reads, but for the caller's own data): user doc + latest result + latest
+    // plan + recent check-ins.
+    const [userSnap, resultSnap, planSnap, checkInSnap] = await Promise.all([
+      userRef.get(),
+      userRef.collection('assessmentResults').orderBy('createdAt', 'desc').limit(1).get(),
+      userRef.collection('plans').orderBy('createdAt', 'desc').limit(1).get(),
+      userRef.collection('checkIns').orderBy('createdAt', 'desc').limit(5).get(),
+    ])
 
-    const { data: planRow } = await supabase
-      .from('plans')
-      .select('id, horizon_months')
-      .eq('profile_id', profile.id)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
+    const userData = userSnap.exists ? (userSnap.data() as Record<string, unknown>) : {}
+    const gradeLevel = typeof userData.gradeLevel === 'number' ? userData.gradeLevel : null
+
+    const result = resultSnap.empty ? null : (resultSnap.docs[0].data() as StoredResult)
+    const plan = planSnap.empty ? null : (planSnap.docs[0].data() as StoredPlan)
+    const checkIns = checkInSnap.docs.map((d) => {
+      const ci = d.data() as StoredCheckIn
+      return { mood: ci.mood, confidence: ci.confidence }
+    })
+
+    const recs = result?.recommendations ?? []
+    const recommended = recs.filter((r) => r.bucket === 'recommended').slice(0, 3).map((r) => r.slug)
+    const careers = recommended.length ? recommended : recs.slice(0, 3).map((r) => r.slug)
+    const skillGaps = recs[0]?.skillGaps ?? []
+
+    const score: ScoreLite | null = result
+      ? {
+          awarenessLevel: result.score.awarenessLevel,
+          ipoPct100: result.score.ipoPct100,
+          primaryRoute: result.score.primaryRoute,
+          primaryCluster: result.score.primaryCluster,
+          secondaryCluster: result.score.secondaryCluster,
+          strengths: result.score.strengths ?? [],
+          growthAreas: result.score.growthAreas ?? [],
+        }
+      : null
 
     let planSummary: {
       horizonMonths: number
@@ -242,53 +229,19 @@ export async function POST(request: Request) {
       totalCount: number
       nextActionTitle: string | null
     } | null = null
-    if (planRow) {
-      const { data: items } = await supabase
-        .from('plan_items')
-        .select('status, title')
-        .eq('plan_id', planRow.id)
-      const list = items ?? []
+    if (plan && Array.isArray(plan.items)) {
+      const items = plan.items
       planSummary = {
-        horizonMonths: planRow.horizon_months as number,
-        doneCount: list.filter((i) => i.status === 'done').length,
-        totalCount: list.length,
-        nextActionTitle: (list.find((i) => i.status !== 'done')?.title as string) ?? null,
+        horizonMonths: plan.horizonMonths,
+        doneCount: items.filter((i) => i.status === 'done').length,
+        totalCount: items.length,
+        nextActionTitle: items.find((i) => i.status !== 'done')?.title ?? null,
       }
     }
 
-    const { data: ciRows } = await supabase
-      .from('check_ins')
-      .select('mood_score, confidence_score')
-      .eq('profile_id', profile.id)
-      .order('created_at', { ascending: false })
-      .limit(5)
-    const checkIns = (ciRows ?? []).map((r) => ({
-      mood: r.mood_score as number,
-      confidence: r.confidence_score as number,
-    }))
-
-    const recs =
-      (resultRow?.recommendations as { slug: string; bucket?: string; skillGaps?: string[] }[] | null) ??
-      []
-    const recommended = recs.filter((r) => r.bucket === 'recommended').slice(0, 3).map((r) => r.slug)
-    const careers = recommended.length ? recommended : recs.slice(0, 3).map((r) => r.slug)
-    const skillGaps = recs[0]?.skillGaps ?? []
-
-    const score: ScoreLite | null = resultRow
-      ? {
-          awarenessLevel: resultRow.awareness_level as AwarenessLevel,
-          ipoPct100: resultRow.ipo_pct_100 as number,
-          primaryRoute: resultRow.primary_route as Route,
-          primaryCluster: resultRow.primary_cluster as Cluster,
-          secondaryCluster: resultRow.secondary_cluster as Cluster,
-          strengths: (resultRow.strengths as string[]) ?? [],
-          growthAreas: (resultRow.growth_areas as string[]) ?? [],
-        }
-      : null
-
     const snapshot = buildSnapshot({
       locale,
-      gradeLevel: (profile.grade_level as number | null) ?? null,
+      gradeLevel,
       score,
       recommendedCareers: careers,
       skillGaps,
@@ -300,14 +253,15 @@ export async function POST(request: Request) {
       : EMPTY_FACTORS
 
     // Prefer the Dialogflow CX agent when configured; else a text LLM; else the
-    // deterministic template fallback below. We never fake AI as real.
+    // deterministic template fallback below. We never fake AI as real. The
+    // session id is the verified uid (server-side identity only).
     let assistantText: string | null = null
     let aiProvider: 'dialogflow_cx' | 'llm' | 'template' = 'template'
     let aiFallback = true
     if (isDialogflowConfigured()) {
       const ctx = buildCounselorContext(snapshot)
       const df = await detectIntentText({
-        sessionId: profile.id as string,
+        sessionId: uid,
         text: message,
         languageCode: locale,
         parameters: toDialogflowParameters(ctx),
@@ -333,7 +287,11 @@ export async function POST(request: Request) {
     if (assistantText) {
       const outSafety = await moderate(assistantText)
       if (outSafety.category === 'crisis') {
-        await storeAssistant(d4.safety.crisis)
+        await storeMessage('assistant', d4.safety.crisis, {
+          provider: aiProvider,
+          fallback: true,
+          language: locale,
+        })
         return ok({
           thread_id: tid,
           assistant_message: d4.safety.crisis,
@@ -359,19 +317,21 @@ export async function POST(request: Request) {
           interpolate(d4.chat.factorScore, { score: score.ipoPct100 }),
         )
       }
-      await storeAssistant(assistantText)
+      const meta = { provider: aiProvider, fallback: aiFallback, language: locale }
+      await storeMessage('assistant', assistantText, meta)
       return ok({
         thread_id: tid,
         assistant_message: assistantText,
         suggested_questions: sugg.questions,
         suggested_actions: sugg.actions,
         referenced_profile_factors: referenced,
-        ai_meta: { provider: aiProvider, fallback: aiFallback, language: locale },
+        ai_meta: meta,
       })
     }
 
     const reply = generateCounselorReply({ message, snapshot, factors, d4 })
-    await storeAssistant(reply.text)
+    const meta = { provider: 'template', fallback: true, language: locale }
+    await storeMessage('assistant', reply.text, meta)
     return ok({
       thread_id: tid,
       assistant_message: reply.text,
@@ -379,7 +339,7 @@ export async function POST(request: Request) {
       suggested_actions: reply.suggestedActions,
       referenced_profile_factors: reply.referencedFactors,
       safety_notice_optional: reply.safetyNotice,
-      ai_meta: { provider: 'template', fallback: true, language: locale },
+      ai_meta: meta,
     })
   } catch {
     return fail('chat_failed', 500)
