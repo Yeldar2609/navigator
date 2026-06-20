@@ -1,7 +1,8 @@
 import { demoStore } from '@/lib/demo/store'
 import type { OnboardingContext } from '@/lib/methodology/scoring-config'
-import { createClient, isSupabaseConfigured } from '@/lib/supabase/browser'
-import { isDemoMode } from './mode'
+import { getCurrentUid } from '@/lib/firebase/client'
+import { fsSaveProfile } from '@/lib/firebase/firestore-client'
+import { isFirebaseMode } from './mode'
 import type { StoredProfile } from './types'
 
 /** Client-side read of the current profile (local store is the UI source). */
@@ -21,37 +22,18 @@ export function onboardingContext(): OnboardingContext {
 }
 
 /**
- * Persist the onboarding profile. Demo mode → local store. Configured →
- * upsert into Supabase `profiles` (and mirror locally so the client flow has
- * immediate access to onboarding context for scoring).
+ * Persist the onboarding profile. Local store is always the immediate UI source.
+ * In Firebase mode it also mirrors to Firestore under users/{uid} (best-effort).
  */
 export async function saveProfile(profile: StoredProfile): Promise<boolean> {
   const saved = demoStore.setProfile(profile)
-  if (isDemoMode() || !isSupabaseConfigured()) return saved
-
+  if (!isFirebaseMode()) return saved
+  const uid = getCurrentUid()
+  if (!uid) return saved
   try {
-    const supabase = createClient()
-    const { data } = await supabase.auth.getUser()
-    const authId = data.user?.id
-    if (!authId) return saved
-    await supabase.from('profiles').upsert(
-      {
-        auth_user_id: authId,
-        display_name: profile.displayName,
-        grade_level: profile.gradeLevel,
-        preferred_language: profile.preferredLanguage,
-        school_code: profile.schoolCode ?? null,
-        onboarding_completed: true,
-        favorite_subjects: profile.favoriteSubjects,
-        current_goals: profile.currentGoals,
-        career_confidence: profile.careerConfidence,
-        support_preference: profile.supportPreference,
-        free_text_goal: profile.freeTextGoal ?? null,
-      },
-      { onConflict: 'auth_user_id' },
-    )
+    await fsSaveProfile(uid, profile)
   } catch {
-    /* network/RLS issue — local store still holds the profile for the demo */
+    /* best-effort — local store still holds the profile */
   }
   return saved
 }

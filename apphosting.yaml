@@ -1,0 +1,73 @@
+# Firebase App Hosting — Kim Bolam (Next.js App Router, SSR).
+#
+# All values here are PUBLIC: the NEXT_PUBLIC_FIREBASE_* web config is designed to
+# ship in the browser bundle (security is enforced by Firestore/Storage rules), so
+# it is not a secret. There are NO real secrets in this file — the Admin SDK uses
+# Application Default Credentials (the App Hosting runtime service account), so no
+# service-account key is needed. (Org policy blocks downloadable keys anyway.)
+runConfig:
+  minInstances: 0
+  maxInstances: 2
+  cpu: 1
+  memoryMiB: 512
+  concurrency: 80
+
+env:
+  - variable: APP_ENV
+    value: production
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_APP_NAME
+    value: Kim Bolam
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_DEFAULT_LOCALE
+    value: ru
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_SUPPORTED_LOCALES
+    value: ru,kk,en
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: AIzaSyBrCfLbwrQ69RSAFDtEWnKR2jPx-_Ig9aQ
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: kim-bolam.firebaseapp.com
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: kim-bolam
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: kim-bolam.firebasestorage.app
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    value: "887167045950"
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: "1:887167045950:web:828f58c59765dd62e2dc6f"
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: GOOGLE_CLOUD_PROJECT
+    value: kim-bolam
+    availability:
+      - RUNTIME
+  - variable: REPORT_BUCKET
+    value: kim-bolam.firebasestorage.app
+    availability:
+      - RUNTIME

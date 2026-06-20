@@ -4,10 +4,12 @@ import { notFound } from 'next/navigation'
 import '../globals.css'
 import { isLocale, locales, type Locale } from '@/lib/i18n/config'
 import { getDictionary } from '@/lib/i18n/dictionaries'
+import { AuthProvider } from '@/components/auth/auth-provider'
 
 export const metadata: Metadata = {
-  title: 'Navigator — Find your direction',
-  description: 'A self-determination companion for students in Kazakhstan.',
+  title: { default: 'Kim Bolam', template: '%s · Kim Bolam' },
+  description: 'Пойми себя, выбери направление и собери понятный план действий.',
+  robots: { index: false, follow: false },
 }
 
 export function generateStaticParams() {
@@ -33,7 +35,7 @@ export default function LangLayout({
         >
           {dict.common.skipToContent}
         </a>
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   )

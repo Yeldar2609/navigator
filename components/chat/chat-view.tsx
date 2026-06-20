@@ -6,6 +6,7 @@ import { Bot, ChevronDown, Send } from 'lucide-react'
 import type { Locale } from '@/lib/i18n/config'
 import type { Messages } from '@/lib/i18n/dictionaries'
 import type { ChatActionKind } from '@/lib/ai/counselor'
+import { PRIVACY_INPUT_HINT } from '@/lib/ai/counselor-guardrails'
 import { actionHref } from '@/lib/ai/tools'
 import { getChatThread, sendChatMessage } from '@/lib/data/chat'
 import { getLatestResult } from '@/lib/data/assessment'
@@ -210,6 +211,8 @@ export function ChatView({ locale, dict }: { locale: Locale; dict: Messages }) {
             {t.send}
           </Button>
         </div>
+        {/* Subtle privacy hint near the input (Day 6 requirement). */}
+        <p className="mt-1 px-2 text-xs text-muted-foreground/80">{PRIVACY_INPUT_HINT[locale]}</p>
       </div>
       <p className="mt-3 text-center text-xs text-muted-foreground">{t.disclaimer}</p>
     </div>

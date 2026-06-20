@@ -3,11 +3,12 @@ import { CAREERS } from '@/lib/methodology/careers-data'
 import { MAJORS, MAJORS_BY_SLUG, relatedMajorsFor } from '@/lib/methodology/majors-data'
 import { ROUTES } from '@/lib/methodology/routes'
 
-describe('careers seed (Day-3 expansion)', () => {
-  it('has 40 careers, 8 per route', () => {
-    expect(CAREERS).toHaveLength(40)
+describe('careers seed (Day-6 production catalog)', () => {
+  it('has at least 100 careers, balanced across routes', () => {
+    expect(CAREERS.length).toBeGreaterThanOrEqual(100)
     for (const route of ROUTES) {
-      expect(CAREERS.filter((c) => c.route === route)).toHaveLength(8)
+      // Balanced coverage: every route carries a meaningful share of the catalog.
+      expect(CAREERS.filter((c) => c.route === route).length).toBeGreaterThanOrEqual(15)
     }
   })
 
@@ -21,8 +22,8 @@ describe('careers seed (Day-3 expansion)', () => {
 })
 
 describe('majors seed', () => {
-  it('has 25 majors with unique slugs and trilingual names', () => {
-    expect(MAJORS).toHaveLength(25)
+  it('has at least 30 majors with unique slugs and trilingual names', () => {
+    expect(MAJORS.length).toBeGreaterThanOrEqual(30)
     const slugs = MAJORS.map((m) => m.slug)
     expect(new Set(slugs).size).toBe(slugs.length)
     for (const m of MAJORS) {

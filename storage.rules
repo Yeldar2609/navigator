@@ -1,0 +1,18 @@
+rules_version = '2';
+
+// Kim Bolam — Cloud Storage rules.
+// Private PDF reports live under reports/{uid}/. Only the owner can read their
+// own reports; all writes happen server-side via the Admin SDK. Admin access to a
+// student's report is mediated by an authorized server route issuing a signed URL.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /reports/{uid}/{allPaths=**} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false; // server (Admin SDK) only
+    }
+    // Everything else is denied to clients.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

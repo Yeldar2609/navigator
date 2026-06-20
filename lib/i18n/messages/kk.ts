@@ -92,6 +92,7 @@ const kk: Messages = {
       submit: 'Кіру',
       switchPrompt: 'Алғаш келдің бе?',
       switchCta: 'Аккаунт жаса',
+      continueWithGoogle: 'Google арқылы жалғастыру',
     },
     signUp: {
       title: 'Жолыңды баста',

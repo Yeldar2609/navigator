@@ -7,7 +7,9 @@ import { recommendCareers } from '@/lib/methodology/recommendations'
 import type { Route } from '@/lib/methodology/routes'
 import { scoreAssessment } from '@/lib/methodology/scoring'
 import { demoStore } from '@/lib/demo/store'
-import { isDemoMode } from './mode'
+import { getCurrentUid } from '@/lib/firebase/client'
+import { fsSavePlan, fsUpdatePlanItems } from '@/lib/firebase/firestore-client'
+import { isFirebaseMode } from './mode'
 import { getProfile, onboardingContext } from './profile'
 import type { PlanItemStatus, StoredPlan, StoredPlanItem, StoredPlanMonth } from './types'
 
@@ -85,15 +87,14 @@ export async function generatePlan(opts: {
     demoStore.setResult({ ...existing, score, recommendations })
   }
 
-  if (!isDemoMode()) {
-    try {
-      await fetch('/api/plan/generate', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ resultId: opts.resultId, horizonMonths: opts.horizonMonths }),
-      })
-    } catch {
-      /* ignore */
+  if (isFirebaseMode()) {
+    const uid = getCurrentUid()
+    if (uid) {
+      try {
+        await fsSavePlan(uid, plan)
+      } catch {
+        /* ignore */
+      }
     }
   }
   return plan
@@ -108,15 +109,14 @@ export async function setPlanItemStatus(
   status: PlanItemStatus,
 ): Promise<StoredPlan | null> {
   const updated = demoStore.updatePlanItem(itemId, { status })
-  if (!isDemoMode()) {
-    try {
-      await fetch('/api/plan/update', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ planItemId: itemId, status }),
-      })
-    } catch {
-      /* ignore */
+  if (isFirebaseMode()) {
+    const uid = getCurrentUid()
+    if (uid && updated?.id) {
+      try {
+        await fsUpdatePlanItems(uid, updated.id, updated.items)
+      } catch {
+        /* ignore */
+      }
     }
   }
   return updated

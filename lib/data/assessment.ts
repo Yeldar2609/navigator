@@ -2,7 +2,9 @@ import { ASSESSMENT_ITEMS } from '@/lib/methodology/assessment-items'
 import { recommendCareers } from '@/lib/methodology/recommendations'
 import { scoreAssessment } from '@/lib/methodology/scoring'
 import { demoStore } from '@/lib/demo/store'
-import { isDemoMode } from './mode'
+import { getCurrentUid } from '@/lib/firebase/client'
+import { fsAddResult, fsSaveAnswer } from '@/lib/firebase/firestore-client'
+import { isDemoMode, isFirebaseMode } from './mode'
 import { getProfile, onboardingContext } from './profile'
 import type { StoredResult } from './types'
 
@@ -25,16 +27,15 @@ export async function saveAnswer(
   value: number,
 ): Promise<{ answeredCount: number; total: number }> {
   const { answeredCount } = demoStore.saveAnswer(code, value)
-  if (!isDemoMode()) {
-    // Best-effort server sync; local store remains the UI source of truth.
-    try {
-      await fetch('/api/assessment/save-answer', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ sessionId: demoStore.ensureSession(), questionCode: code, value }),
-      })
-    } catch {
-      /* ignore */
+  if (isFirebaseMode()) {
+    // Best-effort Firestore sync; local store remains the UI source of truth.
+    const uid = getCurrentUid()
+    if (uid) {
+      try {
+        await fsSaveAnswer(uid, demoStore.ensureSession(), code, value)
+      } catch {
+        /* ignore */
+      }
     }
   }
   return { answeredCount, total: TOTAL_QUESTIONS }
@@ -65,15 +66,14 @@ export async function submitAssessment(): Promise<StoredResult> {
   }
   demoStore.addResult(result)
 
-  if (!isDemoMode()) {
-    try {
-      await fetch('/api/assessment/submit', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ sessionId: demoStore.ensureSession() }),
-      })
-    } catch {
-      /* ignore — client result already shown */
+  if (isFirebaseMode()) {
+    const uid = getCurrentUid()
+    if (uid) {
+      try {
+        await fsAddResult(uid, result)
+      } catch {
+        /* ignore — client result already shown */
+      }
     }
   }
   return result

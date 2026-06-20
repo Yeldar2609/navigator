@@ -175,6 +175,117 @@ export const MAJORS: Major[] = [
     subjectTags: ['languages', 'literature'],
     name: { en: 'Journalism', ru: 'Журналистика', kk: 'Журналистика' },
   },
+
+  // --- Day-6 expansion to production catalog (>=32 majors) ---
+  // TODO(provenance): replace with sourced KZ university program data + ENT
+  // subject requirements when available.
+  // technological
+  {
+    slug: 'software_engineering',
+    route: 'technological',
+    subjectTags: ['informatics', 'mathematics'],
+    name: { en: 'Software Engineering', ru: 'Программная инженерия', kk: 'Бағдарламалық инженерия' },
+  },
+  {
+    slug: 'data_science',
+    route: 'technological',
+    subjectTags: ['mathematics', 'informatics'],
+    name: { en: 'Data Science', ru: 'Наука о данных', kk: 'Деректер ғылымы' },
+  },
+  {
+    slug: 'cybersecurity',
+    route: 'technological',
+    subjectTags: ['informatics'],
+    name: { en: 'Cybersecurity', ru: 'Кибербезопасность', kk: 'Киберқауіпсіздік' },
+  },
+  {
+    slug: 'robotics',
+    route: 'technological',
+    subjectTags: ['physics', 'informatics'],
+    name: { en: 'Robotics', ru: 'Робототехника', kk: 'Робототехника' },
+  },
+  // research
+  {
+    slug: 'pharmacy',
+    route: 'research',
+    subjectTags: ['chemistry', 'biology'],
+    name: { en: 'Pharmacy', ru: 'Фармация', kk: 'Фармация' },
+  },
+  {
+    slug: 'geology',
+    route: 'research',
+    subjectTags: ['geography', 'chemistry'],
+    name: { en: 'Geology', ru: 'Геология', kk: 'Геология' },
+  },
+  {
+    slug: 'agronomy',
+    route: 'research',
+    subjectTags: ['biology', 'geography'],
+    name: { en: 'Agronomy', ru: 'Агрономия', kk: 'Агрономия' },
+  },
+  {
+    slug: 'veterinary_medicine',
+    route: 'research',
+    subjectTags: ['biology', 'chemistry'],
+    name: { en: 'Veterinary Medicine', ru: 'Ветеринария', kk: 'Ветеринария' },
+  },
+  {
+    slug: 'history',
+    route: 'research',
+    subjectTags: ['history', 'social_science'],
+    name: { en: 'History', ru: 'История', kk: 'Тарих' },
+  },
+  // managerial
+  {
+    slug: 'accounting',
+    route: 'managerial',
+    subjectTags: ['mathematics', 'business_economics'],
+    name: { en: 'Accounting', ru: 'Бухгалтерский учёт', kk: 'Бухгалтерлік есеп' },
+  },
+  {
+    slug: 'management',
+    route: 'managerial',
+    subjectTags: ['business_economics', 'mathematics'],
+    name: { en: 'Management', ru: 'Менеджмент', kk: 'Менеджмент' },
+  },
+  {
+    slug: 'logistics',
+    route: 'managerial',
+    subjectTags: ['business_economics', 'geography'],
+    name: { en: 'Logistics', ru: 'Логистика', kk: 'Логистика' },
+  },
+  // social_humanitarian
+  {
+    slug: 'public_health',
+    route: 'social_humanitarian',
+    subjectTags: ['biology', 'social_science'],
+    name: { en: 'Public Health', ru: 'Общественное здравоохранение', kk: 'Қоғамдық денсаулық сақтау' },
+  },
+  {
+    slug: 'physical_education',
+    route: 'social_humanitarian',
+    subjectTags: ['biology', 'social_science'],
+    name: { en: 'Physical Education', ru: 'Физическая культура', kk: 'Дене шынықтыру' },
+  },
+  // creative
+  {
+    slug: 'fine_arts',
+    route: 'creative',
+    subjectTags: ['art_design'],
+    name: { en: 'Fine Arts', ru: 'Изобразительное искусство', kk: 'Бейнелеу өнері' },
+  },
+  {
+    slug: 'film_and_media',
+    route: 'creative',
+    subjectTags: ['art_design', 'literature'],
+    name: { en: 'Film & Media', ru: 'Кино и медиа', kk: 'Кино және медиа' },
+  },
+  {
+    slug: 'music',
+    route: 'creative',
+    subjectTags: ['art_design'],
+    name: { en: 'Music', ru: 'Музыка', kk: 'Музыка' },
+  },
 ]
 
 export const MAJORS_BY_SLUG: Record<string, Major> = Object.fromEntries(
