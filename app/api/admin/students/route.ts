@@ -1,78 +1,42 @@
-import { isAdminRole } from '@/lib/admin/access'
-import { createClient, isSupabaseConfigured } from '@/lib/supabase/server'
+/**
+ * GET /api/admin/students — Firebase-backed admin roster.
+ *
+ * AUTH MODEL: requireAdmin() verifies the Firebase ID token AND that it carries
+ * the `admin: true` custom claim. No admin → 403. Identity/claim come only from
+ * the verified token; the body/query are never trusted.
+ *
+ * Fails SOFT: if the Admin SDK is unconfigured (e.g. local dev without ADC) we
+ * return 503 {error:'admin_unavailable'} instead of 500.
+ *
+ * Returns DERIVED, privacy-safe rows only (see _lib/student-data). NEVER chats
+ * or raw assessment answers.
+ */
+import { requireAdmin } from '@/lib/admin/access'
+import { getAdminDb } from '@/lib/firebase/admin'
+import { isFirebaseAdminConfigured } from '@/lib/env'
+import { resolveLocale } from '@/lib/i18n/config'
+import { getDictionary } from '@/lib/i18n/dictionaries'
 import { fail, ok } from '@/lib/utils/api'
+import { listStudentRows } from '@/app/api/admin/_lib/student-data'
 
+export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-type LatestResult = {
-  profile_id: string
-  primary_route: string
-  ipo_pct_100: number
-  awareness_level: string
-}
+export async function GET(request: Request) {
+  // 1. Authorize via custom claim FIRST.
+  const admin = await requireAdmin(request)
+  if (!admin) return fail('forbidden', 403)
 
-export async function GET() {
-  // Demo renders sample students client-side (no auth in the demo).
-  if (!isSupabaseConfigured()) return ok({ students: [], demo: true })
+  // 2. Fail soft when admin credentials are absent.
+  if (!isFirebaseAdminConfigured()) return fail('admin_unavailable', 503)
+
+  const db = getAdminDb()
+  if (!db) return fail('admin_unavailable', 503)
 
   try {
-    const supabase = createClient()
-    const { data: auth } = await supabase.auth.getUser()
-    const authId = auth.user?.id
-    if (!authId) return fail('unauthorized', 401)
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('auth_user_id', authId)
-      .maybeSingle()
-    if (!profile) return fail('no_profile', 400)
-
-    // Access control: must hold a staff role in an organization. Students → 403.
-    const { data: memberships } = await supabase
-      .from('organization_memberships')
-      .select('organization_id, role')
-      .eq('profile_id', profile.id)
-    const adminMembership = (memberships ?? []).find((m) => isAdminRole(m.role as string))
-    if (!adminMembership) return fail('forbidden', 403)
-
-    const { data: orgStudents } = await supabase
-      .from('organization_memberships')
-      .select('profile_id')
-      .eq('organization_id', adminMembership.organization_id)
-      .eq('role', 'student')
-    const studentIds = (orgStudents ?? []).map((m) => m.profile_id as string)
-    if (studentIds.length === 0) return ok({ students: [] })
-
-    const { data: profiles } = await supabase
-      .from('profiles')
-      .select('id, display_name, grade_level')
-      .in('id', studentIds)
-
-    const { data: results } = await supabase
-      .from('assessment_results')
-      .select('profile_id, primary_route, ipo_pct_100, awareness_level, created_at')
-      .in('profile_id', studentIds)
-      .order('created_at', { ascending: false })
-
-    const latest = new Map<string, LatestResult>()
-    for (const r of (results ?? []) as LatestResult[]) {
-      if (!latest.has(r.profile_id)) latest.set(r.profile_id, r)
-    }
-
-    const students = (profiles ?? []).map((p) => {
-      const r = latest.get(p.id as string)
-      return {
-        id: p.id,
-        name: p.display_name,
-        grade: p.grade_level,
-        assessmentCompleted: !!r,
-        route: r?.primary_route ?? null,
-        readinessPct: r?.ipo_pct_100 ?? null,
-        awarenessLevel: r?.awareness_level ?? null,
-      }
-    })
-
+    const locale = resolveLocale(new URL(request.url).searchParams.get('lang'))
+    const dict = getDictionary(locale)
+    const students = await listStudentRows(db, locale, dict)
     return ok({ students })
   } catch {
     return fail('students_failed', 500)
