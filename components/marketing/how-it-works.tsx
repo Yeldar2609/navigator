@@ -1,50 +1,49 @@
 import type { Messages } from '@/lib/i18n/dictionaries'
-import { Container } from '@/components/layout/container'
-import { MotionCard } from '@/components/motion/motion-card'
 import { SectionHead } from './section-head'
 
-/** Decorative mini-visuals per step (aria-hidden, no text to translate). */
-function StepBars() {
-  const bars = [
-    { h: '40%', tone: 'bg-accent-soft' },
-    { h: '70%', tone: 'bg-accent' },
-    { h: '55%', tone: 'bg-accent-soft' },
-    { h: '90%', tone: 'bg-primary' },
-    { h: '60%', tone: 'bg-accent-soft' },
-    { h: '80%', tone: 'bg-accent' },
-    { h: '45%', tone: 'bg-accent-soft' },
-  ]
+/** Decorative mini-visuals per step (ported verbatim; aria-hidden, no text). */
+function MiniBars() {
   return (
-    <div aria-hidden className="flex h-14 items-end gap-1.5">
-      {bars.map((b, i) => (
-        <span key={i} className={`flex-1 rounded-t-md ${b.tone}`} style={{ height: b.h }} />
-      ))}
+    <div className="mini-bars" aria-hidden="true">
+      <span style={{ height: '40%' }} />
+      <span className="b" style={{ height: '70%' }} />
+      <span style={{ height: '55%' }} />
+      <span className="r" style={{ height: '90%' }} />
+      <span style={{ height: '60%' }} />
+      <span className="b" style={{ height: '80%' }} />
+      <span style={{ height: '45%' }} />
     </div>
   )
 }
 
-function StepChecklist() {
-  const lines = ['bg-accent', 'bg-primary', 'border-2 border-border bg-transparent']
+function MiniPlan({ labels }: { labels: [string, string, string] }) {
   return (
-    <div aria-hidden className="grid gap-2.5">
-      {lines.map((tone, i) => (
-        <div key={i} className="flex items-center gap-2.5">
-          <span className={`h-4 w-4 flex-none rounded ${tone}`} />
-          <span className="h-2 flex-1 rounded-full bg-secondary" />
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function StepTrack() {
-  return (
-    <div aria-hidden className="grid gap-3">
-      <div className="h-2 overflow-hidden rounded-full bg-secondary">
-        <span className="block h-full w-4/5 rounded-full bg-accent" />
+    <div className="mini-plan" aria-hidden="true">
+      <div className="line">
+        <span className="box on" /> {labels[0]}
       </div>
-      <div className="h-2 overflow-hidden rounded-full bg-secondary">
-        <span className="block h-full w-[45%] rounded-full bg-primary" />
+      <div className="line">
+        <span className="box r" /> {labels[1]}
+      </div>
+      <div className="line">
+        <span className="box off" /> {labels[2]}
+      </div>
+    </div>
+  )
+}
+
+function MiniTrack({ progress, pace }: { progress: string; pace: string }) {
+  return (
+    <div className="mini-track" aria-hidden="true">
+      <div className="mt-bar">
+        <i className="a" />
+      </div>
+      <div className="mt-bar">
+        <i className="b" />
+      </div>
+      <div className="mt-meta">
+        <span>{progress}</span>
+        <span>{pace}</span>
       </div>
     </div>
   )
@@ -52,33 +51,46 @@ function StepTrack() {
 
 export function HowItWorks({ dict }: { dict: Messages }) {
   const h = dict.landing.how
-  const steps = [
-    { ...h.step1, Mini: StepBars },
-    { ...h.step2, Mini: StepChecklist },
-    { ...h.step3, Mini: StepTrack },
-  ]
+  const f = dict.landing.features
   return (
-    <section id="how" className="scroll-mt-20 py-20 sm:py-24">
-      <Container>
+    <section id="how">
+      <div className="wrap">
         <SectionHead tag={h.tag} title={h.title} subtitle={h.subtitle} />
-        <div className="grid gap-6 lg:grid-cols-3">
-          {steps.map(({ label, title, body, Mini }, i) => (
-            <MotionCard key={title} delay={i * 0.06} className="rounded-[26px] p-8">
-              <div className="mb-4 inline-flex items-center gap-2.5 text-sm font-extrabold tracking-wide text-primary">
-                <span className="flex h-[30px] w-[30px] items-center justify-center rounded-full border-2 border-primary-soft bg-white text-sm text-primary">
-                  {i + 1}
-                </span>
-                {label}
-              </div>
-              <h3 className="text-xl font-extrabold tracking-tight">{title}</h3>
-              <p className="mt-2.5 text-[15px] font-medium text-muted-foreground">{body}</p>
-              <div className="mt-6 border-t border-dashed border-border pt-5">
-                <Mini />
-              </div>
-            </MotionCard>
-          ))}
+        <div className="how-grid">
+          <div className="how-card">
+            <div className="step-no">
+              <span className="ring">1</span> {h.step1.label}
+            </div>
+            <h3>{h.step1.title}</h3>
+            <p>{h.step1.body}</p>
+            <div className="visual-mini">
+              <MiniBars />
+            </div>
+          </div>
+          <div className="how-card">
+            <div className="step-no">
+              <span className="ring">2</span> {h.step2.label}
+            </div>
+            <h3>{h.step2.title}</h3>
+            <p>{h.step2.body}</p>
+            <div className="visual-mini">
+              <MiniPlan
+                labels={[f.understand.title, f.directions.title, h.step1.title]}
+              />
+            </div>
+          </div>
+          <div className="how-card">
+            <div className="step-no">
+              <span className="ring">3</span> {h.step3.label}
+            </div>
+            <h3>{h.step3.title}</h3>
+            <p>{h.step3.body}</p>
+            <div className="visual-mini">
+              <MiniTrack progress={h.tag} pace={h.step3.label} />
+            </div>
+          </div>
         </div>
-      </Container>
+      </div>
     </section>
   )
 }
