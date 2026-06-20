@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { isDemoMode } from '@/lib/data/mode'
 import { signInOrUp, signInWithGoogle } from '@/lib/auth/session'
+import { resolvePostAuthPath } from '@/lib/auth/post-signin'
 import { signInSchema, signUpSchema } from '@/lib/validations/auth'
 
 export function AuthForm({
@@ -58,7 +59,9 @@ export function AuthForm({
       setLoading(false)
       return
     }
-    router.push(`/${locale}/onboarding`)
+    // Route by the user's actual state (await so it doesn't race the redirect):
+    // returning users with results go to the dashboard, not back to the test.
+    router.push(await resolvePostAuthPath(locale))
   }
 
   async function onGoogle() {
@@ -70,7 +73,7 @@ export function AuthForm({
       setLoading(false)
       return
     }
-    router.push(`/${locale}/onboarding`)
+    router.push(await resolvePostAuthPath(locale))
   }
 
   return (
