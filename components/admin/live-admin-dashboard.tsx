@@ -56,8 +56,14 @@ interface StudentRow {
 
 type LoadState = 'loading' | 'ready' | 'forbidden' | 'unavailable' | 'error'
 
-async function authedFetch(url: string, init?: RequestInit): Promise<Response> {
-  const token = await getIdToken()
+async function authedFetch(
+  url: string,
+  init?: RequestInit,
+  forceRefresh = false,
+): Promise<Response> {
+  // forceRefresh re-fetches the ID token from Firebase (bypassing the ~1h cache)
+  // so a just-granted `admin` claim is picked up without a manual sign-out/in.
+  const token = await getIdToken(forceRefresh)
   if (!token) throw new Error('no_token')
   return fetch(url, {
     ...init,
@@ -81,7 +87,9 @@ export function LiveAdminDashboard({ locale, dict }: { locale: Locale; dict: Mes
     setState('loading')
     setActionError(null)
     try {
-      const res = await authedFetch(`/api/admin/students?lang=${locale}`)
+      // Force a token refresh on load so a newly-granted admin claim applies
+      // immediately (no manual sign-out/in needed).
+      const res = await authedFetch(`/api/admin/students?lang=${locale}`, undefined, true)
       if (res.status === 403) {
         setState('forbidden')
         return
