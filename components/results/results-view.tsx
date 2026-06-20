@@ -27,6 +27,7 @@ import { MotionCard } from '@/components/motion/motion-card'
 import { AnimatedProgressBar } from '@/components/motion/animated-progress-bar'
 import { ConfidenceBoost } from '@/components/emotion/confidence-boost'
 import { ResultComparison } from '@/components/results/result-comparison'
+import { DownloadReportButton } from '@/components/reports/download-report-button'
 import { cn } from '@/lib/utils/cn'
 import { interpolate } from '@/lib/utils/format'
 
@@ -368,6 +369,7 @@ export function ResultsView({ locale, dict }: { locale: Locale; dict: Messages }
           <Bot className="h-4 w-4" />
           {tr.askCounselorCta}
         </Link>
+        <DownloadReportButton locale={locale} dict={dict} />
         <Button variant="ghost" size="lg" onClick={retake}>
           {dict.d4.retake}
         </Button>
